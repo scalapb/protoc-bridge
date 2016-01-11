@@ -10,7 +10,7 @@ pomExtra in Global := {
   </licenses>
   <scm>
     <connection>scm:git:github.com:trueaccord/ScalaPB.git</connection>
-    <developerConnection>scm:git:git@github.com:trueaccord/ScalaPB.git</developerConnection>
+    <developerConnection>scm:git:git@github.com:trueaccord/protoc-bridge.git</developerConnection>
     <url>github.com/trueaccord/ScalaPB</url>
   </scm>
   <developers>

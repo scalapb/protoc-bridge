@@ -20,6 +20,8 @@ javacOptions in ThisBuild ++= {
 
 organization in ThisBuild := "com.trueaccord.scalapb"
 
+name in ThisBuild := "protoc-bridge"
+
 releaseCrossBuild := true
 
 releasePublishArtifactsAction := PgpKeys.publishSigned.value

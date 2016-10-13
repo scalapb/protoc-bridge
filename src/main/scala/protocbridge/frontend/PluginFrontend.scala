@@ -47,12 +47,12 @@ object PluginFrontend {
     stringWriter.toString
   }
 
-  def runWithInputStream(gen: ProtocCodeGenerator, fsin: InputStream): CodeGeneratorResponse = {
+  def runWithBytes(gen: ProtocCodeGenerator, bytes: Array[Byte]): CodeGeneratorResponse = {
     val registry = ExtensionRegistry.newInstance()
     gen.registerExtensions(registry)
 
     Try {
-      val request = CodeGeneratorRequest.parseFrom(fsin, registry)
+      val request = CodeGeneratorRequest.parseFrom(bytes, registry)
       gen.run(request)
     }.recover {
       case throwable =>
@@ -60,6 +60,11 @@ object PluginFrontend {
           .setError(throwable.toString + "\n" + getStackTrace(throwable))
           .build
     }.get
+  }
+
+  def runWithInputStream(gen: ProtocCodeGenerator, fsin: InputStream): CodeGeneratorResponse = {
+    val bytes = org.apache.commons.io.IOUtils.toByteArray(fsin)
+    runWithBytes(gen, bytes)
   }
 
   def createTempFile(extension: String, content: String): Path = {

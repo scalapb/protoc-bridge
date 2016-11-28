@@ -22,12 +22,16 @@ final case class JvmGenerator(name: String, gen: ProtocCodeGenerator) extends Ge
 }
 
 object gens {
+  // Prevent the organization name from getting shaded...
+  // See https://github.com/scalapb/ScalaPB/issues/150
+  private val JavaProtobufArtifact: String = "com+google+protobuf".replace('+', '.')
+
   val cpp = BuiltinGenerator("cpp")
   val csharp = BuiltinGenerator("csharp")
   val java: BuiltinGenerator = java("3.0.0")
 
   def java(runtimeVersion: String): BuiltinGenerator = BuiltinGenerator("java",
-    suggestedDependencies = Seq(Artifact("com.google.protobuf", "protobuf-java", runtimeVersion)))
+    suggestedDependencies = Seq(Artifact(JavaProtobufArtifact, "protobuf-java", runtimeVersion)))
 
   val javanano = BuiltinGenerator("javanano")
   val js = BuiltinGenerator("js")

@@ -1,8 +1,10 @@
 package protocbridge.frontend
 
 import java.nio.file.{Files, Path}
+
 import protocbridge.ProtocCodeGenerator
 import java.nio.file.attribute.PosixFilePermission
+
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.JavaConverters._
@@ -26,7 +28,7 @@ object PosixPluginFrontend extends PluginFrontend {
       fsin.close()
 
       val fsout = Files.newOutputStream(outputPipe)
-      fsout.write(response.toByteArray)
+      fsout.write(response)
       fsout.close()
     }
     (sh, InternalState(inputPipe, outputPipe, sh))

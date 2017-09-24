@@ -9,9 +9,7 @@ class TargetSpec extends FlatSpec with MustMatchers {
   val TmpPath = new File("/tmp")
 
   object FoobarGen extends ProtocCodeGenerator {
-    import com.google.protobuf.compiler.PluginProtos.{CodeGeneratorResponse, CodeGeneratorRequest}
-
-    override def run(request: CodeGeneratorRequest): CodeGeneratorResponse = CodeGeneratorResponse.newBuilder.build
+    override def run(request: Array[Byte]): Array[Byte] = new Array[Byte](0)
   }
 
   def foobarGen(opt1: String, opt2: String): (Generator, Seq[String]) =

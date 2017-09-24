@@ -21,7 +21,7 @@ class WindowsPluginFrontend(pythonExecutable: String) extends PluginFrontend {
     Future {
       val client = ss.accept()
       val response = PluginFrontend.runWithInputStream(plugin, client.getInputStream)
-      client.getOutputStream.write(response.toByteArray)
+      client.getOutputStream.write(response)
       client.close()
       ss.close()
     }

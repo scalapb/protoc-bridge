@@ -1,13 +1,8 @@
 package protocbridge
 
-import com.google.protobuf.ExtensionRegistry
-import com.google.protobuf.compiler.PluginProtos.{CodeGeneratorResponse, CodeGeneratorRequest}
-
 /** This is the interface that code generators need to implement. */
 trait ProtocCodeGenerator {
-  def registerExtensions(p: ExtensionRegistry): Unit = {}
-
-  def run(request: CodeGeneratorRequest): CodeGeneratorResponse
+  def run(request: Array[Byte]): Array[Byte]
 
   def suggestedDependencies: Seq[Artifact] = Nil
 }

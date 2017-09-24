@@ -1,10 +1,8 @@
 package protocbridge.frontend
 
-import java.io.{InputStream, PrintWriter, StringWriter}
+import java.io.{ByteArrayOutputStream, InputStream, PrintWriter, StringWriter}
 import java.nio.file.{Files, Path}
 
-import com.google.protobuf.ExtensionRegistry
-import com.google.protobuf.compiler.PluginProtos.{CodeGeneratorRequest, CodeGeneratorResponse}
 import protocbridge.ProtocCodeGenerator
 
 import scala.util.Try
@@ -47,23 +45,54 @@ object PluginFrontend {
     stringWriter.toString
   }
 
-  def runWithBytes(gen: ProtocCodeGenerator, bytes: Array[Byte]): CodeGeneratorResponse = {
-    val registry = ExtensionRegistry.newInstance()
-    gen.registerExtensions(registry)
-
+  def runWithBytes(gen: ProtocCodeGenerator, request: Array[Byte]): Array[Byte] = {
     Try {
-      val request = CodeGeneratorRequest.parseFrom(bytes, registry)
       gen.run(request)
     }.recover {
       case throwable =>
-        CodeGeneratorResponse.newBuilder()
-          .setError(throwable.toString + "\n" + getStackTrace(throwable))
-          .build
+        createCodeGeneratorResponseWithError(throwable.toString + "\n" + getStackTrace(throwable))
     }.get
   }
 
-  def runWithInputStream(gen: ProtocCodeGenerator, fsin: InputStream): CodeGeneratorResponse = {
-    val bytes = org.apache.commons.io.IOUtils.toByteArray(fsin)
+  def createCodeGeneratorResponseWithError(error: String): Array[Byte] = {
+    val b = Array.newBuilder[Byte]
+
+    def addRawVarint32(value0: Int): Unit = {
+      var value = value0
+      while (true) {
+        if ((value & ~0x7F) == 0) {
+          b += value.toByte
+          return
+        } else {
+          b += ((value & 0x7F) | 0x80).toByte
+          value >>>= 7
+        }
+      }
+    }
+
+    b += 10
+    val errorBytes = error.getBytes(java.nio.charset.Charset.forName("UTF-8"))
+    var length = errorBytes.length
+    addRawVarint32(length)
+    b ++= errorBytes
+    b.result()
+  }
+
+  def readInputStreamToByteArray(fsin: InputStream): Array[Byte] = {
+    val b = new ByteArrayOutputStream()
+    val buffer = new Array[Byte](4096)
+    var count = 0
+    while (count != -1) {
+      count = fsin.read(buffer)
+      if (count > 0) {
+        b.write(buffer, 0, count)
+      }
+    }
+    b.toByteArray
+  }
+
+  def runWithInputStream(gen: ProtocCodeGenerator, fsin: InputStream): Array[Byte] = {
+    val bytes = readInputStreamToByteArray(fsin)
     runWithBytes(gen, bytes)
   }
 

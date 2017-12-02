@@ -18,7 +18,7 @@ javacOptions in ThisBuild ++= {
   }
 }
 
-organization in ThisBuild := "com.trueaccord.scalapb"
+organization in ThisBuild := "com.thesamet.scalapb"
 
 name in ThisBuild := "protoc-bridge"
 

@@ -28,7 +28,7 @@ object gens {
 
   val cpp = BuiltinGenerator("cpp")
   val csharp = BuiltinGenerator("csharp")
-  val java: BuiltinGenerator = java("3.4.0")
+  val java: BuiltinGenerator = java("3.5.1")
 
   def java(runtimeVersion: String): BuiltinGenerator = BuiltinGenerator("java",
     suggestedDependencies = Seq(Artifact(JavaProtobufArtifact, "protobuf-java", runtimeVersion)))

@@ -1,11 +1,11 @@
 package protocbridge
 
 import org.scalatest._
-
 import java.io.File
+import java.util.regex.Pattern
 
 class ProtocBridgeSpec extends FlatSpec with MustMatchers {
-  val TmpPath = new File("/tmp")
+  val TmpPath = new File("/tmp").getAbsoluteFile
 
   object TestFrontend extends frontend.PluginFrontend {
     type InternalState = Unit
@@ -33,18 +33,18 @@ class ProtocBridgeSpec extends FlatSpec with MustMatchers {
   }
 
   "run" should "allow string args for string generators" in {
-    run(Seq(Target(Target.builtin("java"), TmpPath))) must be (Seq("--java_out=:/tmp"))
-    run(Seq(Target(Target.builtin("java", Seq("x", "y", "z")), TmpPath))) must be (Seq("--java_out=x,y,z:/tmp"))
+    run(Seq(Target(Target.builtin("java"), TmpPath))) must be (Seq(s"--java_out=:$TmpPath"))
+    run(Seq(Target(Target.builtin("java", Seq("x", "y", "z")), TmpPath))) must be (Seq(s"--java_out=x,y,z:$TmpPath"))
   }
 
   it should "pass builtin targets correctly" in {
-    run(Seq(Target(gens.java, TmpPath))) must be (Seq("--java_out=:/tmp"))
-    run(Seq(Target(gens.java, TmpPath, Seq("x", "y")))) must be (Seq("--java_out=x,y:/tmp"))
+    run(Seq(Target(gens.java, TmpPath))) must be (Seq(s"--java_out=:$TmpPath"))
+    run(Seq(Target(gens.java, TmpPath, Seq("x", "y")))) must be (Seq(s"--java_out=x,y:$TmpPath"))
   }
 
-  val DefineFlag="--plugin=protoc-gen-jvm_(.*?)=null".r
-  val UseFlag="--jvm_(.*?)_out=:/tmp".r
-  val UseFlagParams="--jvm_(.*?)_out=x,y:/tmp".r
+  val DefineFlag = "--plugin=protoc-gen-jvm_(.*?)=null".r
+  val UseFlag = s"--jvm_(.*?)_out=:${Pattern.quote(TmpPath.toString)}".r
+  val UseFlagParams = s"--jvm_(.*?)_out=x,y:${Pattern.quote(TmpPath.toString)}".r
 
   it should "allow using FooBarGen" in {
     run(Seq(Target(FoobarGen, TmpPath))) match {
@@ -58,7 +58,7 @@ class ProtocBridgeSpec extends FlatSpec with MustMatchers {
 
   it should "allow using fooBarGen" in {
     run(Seq(Target(foobarGen("x", "y"), TmpPath))) must be (Seq(
-      "--plugin=protoc-gen-fff=null", "--fff_out=x,y:/tmp"
+      "--plugin=protoc-gen-fff=null", s"--fff_out=x,y:$TmpPath"
     ))
   }
 }

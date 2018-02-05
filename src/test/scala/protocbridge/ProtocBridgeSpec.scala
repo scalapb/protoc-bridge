@@ -2,8 +2,7 @@ package protocbridge
 
 import org.scalatest._
 import java.io.File
-
-import scala.util.matching.Regex
+import java.util.regex.Pattern
 
 class ProtocBridgeSpec extends FlatSpec with MustMatchers {
   val TmpPath = new File("/tmp").getAbsoluteFile
@@ -44,8 +43,8 @@ class ProtocBridgeSpec extends FlatSpec with MustMatchers {
   }
 
   val DefineFlag = "--plugin=protoc-gen-jvm_(.*?)=null".r
-  val UseFlag = s"--jvm_(.*?)_out=:${Regex.quote(TmpPath.toString)}".r
-  val UseFlagParams = s"--jvm_(.*?)_out=x,y:${Regex.quote(TmpPath.toString)}".r
+  val UseFlag = s"--jvm_(.*?)_out=:${Pattern.quote(TmpPath.toString)}".r
+  val UseFlagParams = s"--jvm_(.*?)_out=x,y:${Pattern.quote(TmpPath.toString)}".r
 
   it should "allow using FooBarGen" in {
     run(Seq(Target(FoobarGen, TmpPath))) match {

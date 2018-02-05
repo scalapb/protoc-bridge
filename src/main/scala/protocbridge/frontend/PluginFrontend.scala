@@ -104,9 +104,10 @@ object PluginFrontend {
     fileName
   }
 
-  def newInstance(pythonExe: String = "python.exe"): PluginFrontend = {
-    def isWindows: Boolean = sys.props("os.name").startsWith("Windows")
-    if (isWindows) new WindowsPluginFrontend(pythonExe)
+  def isWindows: Boolean = sys.props("os.name").startsWith("Windows")
+
+  def newInstance(): PluginFrontend = {
+    if (isWindows) new WindowsPluginFrontend
     else PosixPluginFrontend
   }
 }

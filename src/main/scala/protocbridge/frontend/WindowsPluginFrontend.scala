@@ -11,8 +11,10 @@ import java.net.{ServerSocket, Socket}
 /** A PluginFrontend that binds a server socket to a local interface. The plugin
   * is a batch script that invokes WindowsPluginFrontend.main method, in a new JVM with the same parameters
   * as the currently running JVM. The plugin will communicate its stdin and stdout to this socket.
+  *
+  * @param deprecatedPythonExecutable Not used now, it's here to keep binary compatibility.
   */
-class WindowsPluginFrontend extends PluginFrontend {
+class WindowsPluginFrontend(deprecatedPythonExecutable: String = "") extends PluginFrontend {
 
   case class InternalState(batFile: Path)
 

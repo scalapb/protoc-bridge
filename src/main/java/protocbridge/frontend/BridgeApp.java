@@ -23,15 +23,16 @@ public class BridgeApp {
     }
 
     private static byte[] readInputStreamToByteArray(InputStream is) throws IOException {
-        ByteArrayOutputStream b = new ByteArrayOutputStream();
-        byte[] buffer = new byte[4096];
-        int count = 0;
-        while (count != -1) {
-            count = is.read(buffer);
-            if (count > 0) {
-                b.write(buffer, 0, count);
+        try(ByteArrayOutputStream b = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[4096];
+            int count = 0;
+            while (count != -1) {
+                count = is.read(buffer);
+                if (count > 0) {
+                    b.write(buffer, 0, count);
+                }
             }
+            return b.toByteArray();
         }
-        return b.toByteArray();
     }
 }

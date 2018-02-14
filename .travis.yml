@@ -3,7 +3,7 @@ sudo: false
 scala:
   - 2.10.6
   - 2.11.11
-jdk: oraclejdk7
+jdk: openjdk7
 matrix:
   include:
   - scala: 2.12.2

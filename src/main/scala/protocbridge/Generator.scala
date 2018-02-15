@@ -40,6 +40,5 @@ object gens {
   val ruby = BuiltinGenerator("ruby")
   val go = BuiltinGenerator("go")
   val swagger = BuiltinGenerator("swagger")
-  val gateway =BuiltinGenerator("grpc-gateway")
-
+  val gateway = BuiltinGenerator("grpc-gateway")
 }

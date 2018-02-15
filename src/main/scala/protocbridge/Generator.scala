@@ -38,4 +38,7 @@ object gens {
   val objc = BuiltinGenerator("objc")
   val python = BuiltinGenerator("python")
   val ruby = BuiltinGenerator("ruby")
+  val go = BuiltinGenerator("go")
+  val swagger = BuiltinGenerator("swagger")
+  val gateway = BuiltinGenerator("grpc-gateway")
 }

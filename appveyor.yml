@@ -18,6 +18,10 @@ install:
   - cmd: SET SBT_OPTS=-XX:MaxPermSize=2g -Xmx4g
 
 build_script:
+  - sbt ++2.10.7 compile
+  - sbt ++2.11.1 compile
+  - sbt ++2.12.4 compile
+
 test_script:
   - sbt ++2.10.7 test
   - sbt ++2.11.1 test

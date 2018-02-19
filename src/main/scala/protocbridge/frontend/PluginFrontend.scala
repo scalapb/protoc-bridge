@@ -106,10 +106,12 @@ object PluginFrontend {
 
   def isWindows: Boolean = sys.props("os.name").startsWith("Windows")
 
+  def newInstance: PluginFrontend = newInstance("python.exe")
+
   /**
-   * @param pythonExe Not used now, it's here to keep binary compatibility.
-   */
-  def newInstance(pythonExe: String = "python.exe"): PluginFrontend = {
+    * @param pythonExe Not used now, it's here to keep binary compatibility.
+    */
+  def newInstance(pythonExe: String): PluginFrontend = {
     if (isWindows) new WindowsPluginFrontend(pythonExe)
     else PosixPluginFrontend
   }

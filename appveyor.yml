@@ -4,6 +4,11 @@ os: Windows Server 2012
 environment:
   SBT_OPTS: -Dfile.encoding=UTF8
   JAVA_OPTS: -Dfile.encoding=UTF8
+  matrix:
+  - SCALA_VERSION: 2.10.7
+  - SCALA_VERSION: 2.11.12
+  - SCALA_VERSION: 2.12.4
+
 install:
   - ps: |
       Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -18,11 +23,7 @@ install:
   - cmd: SET SBT_OPTS=-XX:MaxPermSize=2g -Xmx4g
 
 build_script:
-  - sbt ++2.10.7 compile
-  - sbt ++2.11.1 compile
-  - sbt ++2.12.4 compile
+  - sbt ++$SCALA_VERSION compile
 
 test_script:
-  - sbt ++2.10.7 test
-  - sbt ++2.11.1 test
-  - sbt ++2.12.4 test
+  - sbt ++$SCALA_VERSION test

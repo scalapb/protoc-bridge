@@ -15,15 +15,20 @@ install:
       if (!(Test-Path -Path "C:\sbt" )) {
         (new-object System.Net.WebClient).DownloadFile(
           'https://github.com/sbt/sbt/releases/download/v0.13.17/sbt-0.13.17.zip',
-          'C:\sbt-bin.zip'
+          'C:\sbt-bin-0.13.17.zip'
         )
-        [System.IO.Compression.ZipFile]::ExtractToDirectory("C:\sbt-bin.zip", "C:\sbt")
+        [System.IO.Compression.ZipFile]::ExtractToDirectory("C:\sbt-bin-0.13.17.zip", "C:\sbt")
       }
   - cmd: SET PATH=C:\sbt\sbt\bin;%JAVA_HOME%\bin;%PATH%
   - cmd: SET SBT_OPTS=-XX:MaxPermSize=2g -Xmx4g
 
 build_script:
-  - sbt ++$SCALA_VERSION compile
+  - sbt "++ %SCALA_VERSION%" compile
 
 test_script:
-  - sbt ++$SCALA_VERSION test
+  - sbt "++ %SCALA_VERSION%" test
+
+cache:
+  - 'C:\sbt -> appveyor.yml'
+  - '%USERPROFILE%\.ivy2 -> appveyor.yml'
+

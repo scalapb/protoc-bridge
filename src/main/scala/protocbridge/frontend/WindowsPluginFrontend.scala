@@ -1,7 +1,7 @@
 package protocbridge.frontend
 
 import java.net.ServerSocket
-import java.nio.file.{Files, Path}
+import java.nio.file.{Files, Path, Paths}
 
 import protocbridge.ProtocCodeGenerator
 
@@ -36,9 +36,10 @@ object WindowsPluginFrontend extends PluginFrontend {
   }
 
   private def createWindowsScript(port: Int): InternalState = {
+    val classPath = Paths.get(getClass.getProtectionDomain.getCodeSource.getLocation.toURI)
     val batchFile = PluginFrontend.createTempFile(".bat",
       s"""@echo off
-          |"${sys.props("java.home")}\\bin\\java.exe" -cp "${getClass.getProtectionDomain.getCodeSource.getLocation.getPath}" ${classOf[BridgeApp].getName} $port
+          |"${sys.props("java.home")}\\bin\\java.exe" -cp "$classPath" ${classOf[BridgeApp].getName} $port
         """.stripMargin)
     InternalState(batchFile)
   }

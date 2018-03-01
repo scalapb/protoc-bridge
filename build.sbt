@@ -46,3 +46,13 @@ libraryDependencies ++= Seq(
   "org.scalacheck" %% "scalacheck" % "1.13.4" % "test",
   "com.google.protobuf" % "protobuf-java" % "3.5.1" % "test"
 )
+
+ScriptedPlugin.scriptedSettings
+scriptedBufferLog := false
+scriptedLaunchOpts := { scriptedLaunchOpts.value ++
+  Seq(
+    "-Dprotoc.bridge.version=" + version.value,
+    "-Dprotoc.bridge.scala.version=" + scalaVersion.value
+  )
+}
+

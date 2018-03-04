@@ -1,9 +1,11 @@
 package protocbridge.frontend
 
 import java.io.ByteArrayInputStream
+import java.nio.charset.StandardCharsets
 
 import org.scalatest.{FlatSpec, MustMatchers}
 import protocbridge.ProtocCodeGenerator
+
 import scala.collection.JavaConverters._
 
 class PluginFrontendSpec extends FlatSpec with MustMatchers {
@@ -17,7 +19,7 @@ class PluginFrontendSpec extends FlatSpec with MustMatchers {
       val (path, state) = frontendInstance.prepare(generatorStub)
 
       println(path)
-      java.nio.file.Files.readAllLines(path).asScala.foreach(println)
+      java.nio.file.Files.readAllLines(path, StandardCharsets.UTF_8).asScala.foreach(println)
 
       val process = sys.process.Process(path.toAbsolutePath.toString)
         .#<(new ByteArrayInputStream(Array.empty))

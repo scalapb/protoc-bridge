@@ -47,6 +47,9 @@ libraryDependencies ++= Seq(
   "com.google.protobuf" % "protobuf-java" % "3.5.1" % "test"
 )
 
+// https://github.com/coursier/coursier/issues/236
+resolvers += Resolver.typesafeIvyRepo("releases")
+
 ScriptedPlugin.scriptedSettings
 scriptedBufferLog := false
 scriptedLaunchOpts := { scriptedLaunchOpts.value ++

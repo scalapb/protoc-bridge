@@ -45,7 +45,7 @@ object ProtocBridge {
   def run[A](protoc: Seq[String] => A,
              targets: Seq[Target],
              params: Seq[String],
-             pluginFrontend: PluginFrontend = PluginFrontend.newInstance()): A = {
+             pluginFrontend: PluginFrontend = PluginFrontend.newInstance): A = {
 
     val namedGenerators: Seq[(String, ProtocCodeGenerator)] =
       targets.collect {
@@ -64,7 +64,7 @@ object ProtocBridge {
   def runWithGenerators[A](protoc: Seq[String] => A,
                            namedGenerators: Seq[(String, ProtocCodeGenerator)],
                            params: Seq[String],
-                           pluginFrontend: PluginFrontend = PluginFrontend.newInstance()): A = {
+                           pluginFrontend: PluginFrontend = PluginFrontend.newInstance): A = {
 
     val generatorScriptState: Seq[(String, (Path, pluginFrontend.InternalState))] =
       namedGenerators.map {

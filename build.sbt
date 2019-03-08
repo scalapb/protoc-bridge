@@ -42,7 +42,7 @@ releaseProcess := Seq[ReleaseStep](
 )
 
 libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest" % "3.0.5" % "test",
-  "org.scalacheck" %% "scalacheck" % "1.13.5" % "test",
-  "com.google.protobuf" % "protobuf-java" % "3.6.1" % "test"
+  "org.scalatest" %% "scalatest" % "3.0.6" % "test",
+  "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
+  "com.google.protobuf" % "protobuf-java" % "3.7.0" % "test"
 )

@@ -24,6 +24,8 @@ name in ThisBuild := "protoc-bridge"
 
 releaseCrossBuild := true
 
+publishTo := sonatypePublishTo.value
+
 releasePublishArtifactsAction := PgpKeys.publishSigned.value
 
 releaseProcess := Seq[ReleaseStep](

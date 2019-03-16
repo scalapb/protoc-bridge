@@ -2,7 +2,7 @@ import ReleaseTransformations._
 
 scalaVersion in ThisBuild := "2.11.7"
 
-crossScalaVersions in ThisBuild := Seq("2.10.7", "2.11.12", "2.12.7")
+crossScalaVersions in ThisBuild := Seq("2.10.7", "2.11.12", "2.12.8", "2.13.0-M5")
 
 scalacOptions in ThisBuild ++= {
   CrossVersion.partialVersion(scalaVersion.value) match {

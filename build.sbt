@@ -2,7 +2,7 @@ import ReleaseTransformations._
 
 scalaVersion in ThisBuild := "2.11.7"
 
-crossScalaVersions in ThisBuild := Seq("2.10.7", "2.11.12", "2.12.8", "2.13.0-M5")
+crossScalaVersions in ThisBuild := Seq("2.10.7", "2.11.12", "2.12.8", "2.13.0-RC1")
 
 scalacOptions in ThisBuild ++= {
   CrossVersion.partialVersion(scalaVersion.value) match {
@@ -44,7 +44,7 @@ releaseProcess := Seq[ReleaseStep](
 )
 
 libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest" % "3.0.6" % "test",
+  "org.scalatest" %% "scalatest" % "3.0.8-RC2" % "test",
   "org.scalacheck" %% "scalacheck" % "1.14.0" % "test",
   "com.google.protobuf" % "protobuf-java" % "3.7.0" % "test"
 )

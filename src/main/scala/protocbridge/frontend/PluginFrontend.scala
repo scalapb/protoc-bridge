@@ -110,10 +110,4 @@ object PluginFrontend {
     if (isWindows) WindowsPluginFrontend
     else PosixPluginFrontend
   }
-
-  /**
-    * @param pythonExe Not used now, it's here to keep binary compatibility.
-    */
-  @deprecated("Use 'newInstance' instead", "0.7.2")
-  def newInstance(pythonExe: String = "python.exe"): PluginFrontend = newInstance
 }

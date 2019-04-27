@@ -36,11 +36,11 @@ releaseProcess := Seq[ReleaseStep](
   setReleaseVersion,
   commitReleaseVersion,
   tagRelease,
-  ReleaseStep(action = "publishSigned" :: _, enableCrossBuild = true),
+  releaseStepCommandAndRemaining("+publishSigned"),
   setNextVersion,
   commitNextVersion,
+  releaseStepCommand("sonatypeReleaseAll"),
   pushChanges,
-  ReleaseStep(action = "sonatypeReleaseAll" :: _, enableCrossBuild = true)
 )
 
 libraryDependencies ++= Seq(

@@ -1,5 +1,6 @@
 package protocbridge
 
+import java.io.File
 import java.nio.file.Files
 
 import com.google.protobuf.Descriptors.FileDescriptor
@@ -37,8 +38,8 @@ object TestJvmPlugin extends ProtocCodeGenerator {
 
 class ProtocIntegrationSpec extends FlatSpec with MustMatchers {
   "ProtocBridge.run" should  "invoke JVM and Java plugin properly" in {
-    val protoFile = getClass.getResource("/test.proto").getPath
-    val protoDir = getClass.getResource("/").getPath
+    val protoFile = new File(getClass.getResource("/test.proto").getFile).getAbsolutePath
+    val protoDir = new File(getClass.getResource("/").getFile).getAbsolutePath
 
     val javaOutDir = Files.createTempDirectory("javaout").toFile
     val testOutDir = Files.createTempDirectory("testout").toFile

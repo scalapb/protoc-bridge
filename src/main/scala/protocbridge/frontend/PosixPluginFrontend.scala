@@ -15,11 +15,12 @@ import scala.sys.process._
   * Creates a pair of named pipes for input/output and a shell script that communicates with them.
   */
 object PosixPluginFrontend extends PluginFrontend {
-  case class InternalState(inputPipe: Path, outputPipe: Path, shellScript: Path)
+  case class InternalState(inputPipe: Path, outputPipe: Path, tempDir: Path, shellScript: Path)
 
   override def prepare(plugin: ProtocCodeGenerator): (Path, InternalState) = {
-    val inputPipe = createPipe()
-    val outputPipe = createPipe()
+    val tempDirPath = Files.createTempDirectory("protopipe-")
+    val inputPipe = createPipe(tempDirPath, "input")
+    val outputPipe = createPipe(tempDirPath, "output")
     val sh = createShellScript(inputPipe, outputPipe)
 
     Future {
@@ -31,18 +32,18 @@ object PosixPluginFrontend extends PluginFrontend {
       fsout.write(response)
       fsout.close()
     }
-    (sh, InternalState(inputPipe, outputPipe, sh))
+    (sh, InternalState(inputPipe, outputPipe, tempDirPath, sh))
   }
 
   override def cleanup(state: InternalState): Unit = {
     Files.delete(state.inputPipe)
     Files.delete(state.outputPipe)
+    Files.delete(state.tempDir)
     Files.delete(state.shellScript)
   }
 
-  private def createPipe(): Path = {
-    val pipeName = Files.createTempFile("protopipe-", ".pipe")
-    Files.delete(pipeName)
+  private def createPipe(tempDirPath: Path, name: String): Path = {
+    val pipeName = tempDirPath.resolve(name)
     Seq("mkfifo", "-m", "600", pipeName.toAbsolutePath.toString).!!
     pipeName
   }

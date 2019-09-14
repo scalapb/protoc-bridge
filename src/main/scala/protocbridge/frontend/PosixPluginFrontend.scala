@@ -15,7 +15,12 @@ import scala.sys.process._
   * Creates a pair of named pipes for input/output and a shell script that communicates with them.
   */
 object PosixPluginFrontend extends PluginFrontend {
-  case class InternalState(inputPipe: Path, outputPipe: Path, tempDir: Path, shellScript: Path)
+  case class InternalState(
+      inputPipe: Path,
+      outputPipe: Path,
+      tempDir: Path,
+      shellScript: Path
+  )
 
   override def prepare(plugin: ProtocCodeGenerator): (Path, InternalState) = {
     val tempDirPath = Files.createTempDirectory("protopipe-")
@@ -49,15 +54,15 @@ object PosixPluginFrontend extends PluginFrontend {
   }
 
   private def createShellScript(inputPipe: Path, outputPipe: Path): Path = {
-    val scriptName = PluginFrontend.createTempFile("",
-      s"""|#!/usr/bin/env sh
+    val scriptName = PluginFrontend.createTempFile("", s"""|#!/usr/bin/env sh
           |set -e
           |cat /dev/stdin > "$inputPipe"
           |cat "$outputPipe"
       """.stripMargin)
-    Files.setPosixFilePermissions(scriptName, Set(
-      PosixFilePermission.OWNER_EXECUTE,
-      PosixFilePermission.OWNER_READ).asJava)
+    Files.setPosixFilePermissions(
+      scriptName,
+      Set(PosixFilePermission.OWNER_EXECUTE, PosixFilePermission.OWNER_READ).asJava
+    )
     scriptName
   }
 }

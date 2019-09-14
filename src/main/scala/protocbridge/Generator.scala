@@ -1,10 +1,12 @@
 package protocbridge
 
 // Simple definition of Maven coordinates.
-case class Artifact(groupId: String,
-                    artifactId: String,
-                    version: String,
-                    crossVersion: Boolean = false)
+case class Artifact(
+    groupId: String,
+    artifactId: String,
+    version: String,
+    crossVersion: Boolean = false
+)
 
 /** Represents a code generator invocation */
 sealed trait Generator {
@@ -14,30 +16,44 @@ sealed trait Generator {
 }
 
 /** Represents a generator built into protoc.  */
-final case class BuiltinGenerator(name: String, suggestedDependencies: Seq[Artifact] = Nil) extends Generator
+final case class BuiltinGenerator(
+    name: String,
+    suggestedDependencies: Seq[Artifact] = Nil
+) extends Generator
 
-final case class PluginGenerator(name: String, suggestedDependencies: Seq[Artifact], path: Option[String]) extends Generator
+final case class PluginGenerator(
+    name: String,
+    suggestedDependencies: Seq[Artifact],
+    path: Option[String]
+) extends Generator
 
 /** Represents a generator implemented by ProtocCodeGenerator. */
-final case class JvmGenerator(name: String, gen: ProtocCodeGenerator) extends Generator {
+final case class JvmGenerator(name: String, gen: ProtocCodeGenerator)
+    extends Generator {
   def suggestedDependencies: Seq[Artifact] = gen.suggestedDependencies
 }
 
 object gens {
   // Prevent the organization name from getting shaded...
   // See https://github.com/scalapb/ScalaPB/issues/150
-  private val JavaProtobufArtifact: String = "com+google+protobuf".replace('+', '.')
+  private val JavaProtobufArtifact: String =
+    "com+google+protobuf".replace('+', '.')
 
   val cpp = BuiltinGenerator("cpp")
   val csharp = BuiltinGenerator("csharp")
   val java: BuiltinGenerator = java("3.7.1")
 
-  def java(runtimeVersion: String): BuiltinGenerator = BuiltinGenerator("java",
-    suggestedDependencies = Seq(Artifact(JavaProtobufArtifact, "protobuf-java", runtimeVersion)))
+  def java(runtimeVersion: String): BuiltinGenerator =
+    BuiltinGenerator(
+      "java",
+      suggestedDependencies =
+        Seq(Artifact(JavaProtobufArtifact, "protobuf-java", runtimeVersion))
+    )
 
   def plugin(name: String): PluginGenerator = PluginGenerator(name, Nil, None)
 
-  def plugin(name: String, path: String): PluginGenerator = PluginGenerator(name, Nil, Some(path))
+  def plugin(name: String, path: String): PluginGenerator =
+    PluginGenerator(name, Nil, Some(path))
 
   val javanano = BuiltinGenerator("javanano")
   val js = BuiltinGenerator("js")

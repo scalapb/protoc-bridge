@@ -4,7 +4,10 @@ import java.io.File
 import java.nio.file.Files
 
 import com.google.protobuf.Descriptors.FileDescriptor
-import com.google.protobuf.compiler.PluginProtos.{CodeGeneratorRequest, CodeGeneratorResponse}
+import com.google.protobuf.compiler.PluginProtos.{
+  CodeGeneratorRequest,
+  CodeGeneratorResponse
+}
 import org.scalatest.{FlatSpec, MustMatchers}
 
 import scala.io.Source
@@ -16,11 +19,12 @@ object TestJvmPlugin extends ProtocCodeGenerator {
     val request = CodeGeneratorRequest.parseFrom(in)
 
     val filesByName: Map[String, FileDescriptor] =
-      request.getProtoFileList.asScala.foldLeft[Map[String, FileDescriptor]](Map.empty) {
-        case (acc, fp) =>
-          val deps = fp.getDependencyList.asScala.map(acc)
-          acc + (fp.getName -> FileDescriptor.buildFrom(fp, deps.toArray))
-      }
+      request.getProtoFileList.asScala
+        .foldLeft[Map[String, FileDescriptor]](Map.empty) {
+          case (acc, fp) =>
+            val deps = fp.getDependencyList.asScala.map(acc)
+            acc + (fp.getName -> FileDescriptor.buildFrom(fp, deps.toArray))
+        }
 
     val content = (for {
       fileName <- request.getFileToGenerateList.asScala
@@ -29,7 +33,8 @@ object TestJvmPlugin extends ProtocCodeGenerator {
     } yield (file.getName + ":" + msg.getFullName)).mkString("\n")
 
     val responseBuilder = CodeGeneratorResponse.newBuilder()
-    responseBuilder.addFileBuilder()
+    responseBuilder
+      .addFileBuilder()
       .setContent(content)
       .setName("msglist.txt")
     responseBuilder.build().toByteArray
@@ -37,8 +42,9 @@ object TestJvmPlugin extends ProtocCodeGenerator {
 }
 
 class ProtocIntegrationSpec extends FlatSpec with MustMatchers {
-  "ProtocBridge.run" should  "invoke JVM and Java plugin properly" in {
-    val protoFile = new File(getClass.getResource("/test.proto").getFile).getAbsolutePath
+  "ProtocBridge.run" should "invoke JVM and Java plugin properly" in {
+    val protoFile =
+      new File(getClass.getResource("/test.proto").getFile).getAbsolutePath
     val protoDir = new File(getClass.getResource("/").getFile).getAbsolutePath
 
     val javaOutDir = Files.createTempDirectory("javaout").toFile
@@ -53,12 +59,16 @@ class ProtocIntegrationSpec extends FlatSpec with MustMatchers {
       Seq(protoFile, "-I", protoDir)
     ) must be(0)
 
-    Files.exists(javaOutDir.toPath.resolve("mytest").resolve("Test.java")) must be(true)
+    Files.exists(javaOutDir.toPath.resolve("mytest").resolve("Test.java")) must be(
+      true
+    )
     val msglist = testOutDir.toPath.resolve("msglist.txt")
     Files.exists(msglist) must be(true)
-    Source.fromFile(msglist.toFile).getLines().toSeq must be (Seq(
-      "test.proto:mytest.TestMsg",
-      "test.proto:mytest.AnotherMsg"
-    ))
+    Source.fromFile(msglist.toFile).getLines().toSeq must be(
+      Seq(
+        "test.proto:mytest.TestMsg",
+        "test.proto:mytest.AnotherMsg"
+      )
+    )
   }
 }

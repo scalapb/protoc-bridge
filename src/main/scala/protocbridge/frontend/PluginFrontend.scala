@@ -7,7 +7,6 @@ import protocbridge.ProtocCodeGenerator
 
 import scala.util.Try
 
-
 /** A PluginFrontend instance provides a platform-dependent way for protoc to communicate with
   * a JVM based ProtocCodeGenerator.
   *
@@ -45,12 +44,17 @@ object PluginFrontend {
     stringWriter.toString
   }
 
-  def runWithBytes(gen: ProtocCodeGenerator, request: Array[Byte]): Array[Byte] = {
+  def runWithBytes(
+      gen: ProtocCodeGenerator,
+      request: Array[Byte]
+  ): Array[Byte] = {
     Try {
       gen.run(request)
     }.recover {
       case throwable =>
-        createCodeGeneratorResponseWithError(throwable.toString + "\n" + getStackTrace(throwable))
+        createCodeGeneratorResponseWithError(
+          throwable.toString + "\n" + getStackTrace(throwable)
+        )
     }.get
   }
 
@@ -91,7 +95,10 @@ object PluginFrontend {
     b.toByteArray
   }
 
-  def runWithInputStream(gen: ProtocCodeGenerator, fsin: InputStream): Array[Byte] = {
+  def runWithInputStream(
+      gen: ProtocCodeGenerator,
+      fsin: InputStream
+  ): Array[Byte] = {
     val bytes = readInputStreamToByteArray(fsin)
     runWithBytes(gen, bytes)
   }

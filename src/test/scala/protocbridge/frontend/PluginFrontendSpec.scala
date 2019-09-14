@@ -6,11 +6,17 @@ import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{FlatSpec, MustMatchers}
 
-class PluginFrontendSpec extends FlatSpec with MustMatchers with GeneratorDrivenPropertyChecks {
-  def expected(error: String) = CodeGeneratorResponse.newBuilder().setError(error).build()
+class PluginFrontendSpec
+    extends FlatSpec
+    with MustMatchers
+    with GeneratorDrivenPropertyChecks {
+  def expected(error: String) =
+    CodeGeneratorResponse.newBuilder().setError(error).build()
 
-  def actual(
-    error: String) = CodeGeneratorResponse.parseFrom(PluginFrontend.createCodeGeneratorResponseWithError(error))
+  def actual(error: String) =
+    CodeGeneratorResponse.parseFrom(
+      PluginFrontend.createCodeGeneratorResponseWithError(error)
+    )
 
   "createCodeGeneratorResponseWithError" should "create valid objects" in {
     actual("") must be(expected(""))
@@ -20,9 +26,8 @@ class PluginFrontendSpec extends FlatSpec with MustMatchers with GeneratorDriven
     actual("a" * 256) must be(expected("a" * 256))
     actual("\u3714\u3715" * 256) must be(expected("\u3714\u3715" * 256))
     actual("abc" * 1000) must be(expected("abc" * 1000))
-    forAll(MinSuccessful(1000)) {
-      s: String =>
-        actual(s) must be(expected(s))
+    forAll(MinSuccessful(1000)) { s: String =>
+      actual(s) must be(expected(s))
     }
 
   }
@@ -32,8 +37,10 @@ class PluginFrontendSpec extends FlatSpec with MustMatchers with GeneratorDriven
       PluginFrontend.readInputStreamToByteArray(new ByteArrayInputStream(bs))
 
     readInput(Array.empty) must be(Array())
-    readInput(Array[Byte](1, 2, 3, 4)) must be(Array(1,2,3,4))
-    val special = Array.tabulate[Byte](10000){ n => (n % 37).toByte }
+    readInput(Array[Byte](1, 2, 3, 4)) must be(Array(1, 2, 3, 4))
+    val special = Array.tabulate[Byte](10000) { n =>
+      (n % 37).toByte
+    }
     readInput(special) must be(special)
   }
 }

@@ -21,9 +21,10 @@ class WindowsPluginFrontendSpec extends FlatSpec with MustMatchers {
       }
       val (path, state) = WindowsPluginFrontend.prepare(fakeGenerator)
       val actualOutput = scala.collection.mutable.Buffer.empty[String]
-      val process = sys.process.Process(path.toAbsolutePath.toString)
-                               .#<(new ByteArrayInputStream(toSend.getBytes))
-                               .run(ProcessLogger(o => actualOutput.append(o)))
+      val process = sys.process
+        .Process(path.toAbsolutePath.toString)
+        .#<(new ByteArrayInputStream(toSend.getBytes))
+        .run(ProcessLogger(o => actualOutput.append(o)))
       process.exitValue()
       actualOutput.mkString mustBe toReceive
       WindowsPluginFrontend.cleanup(state)

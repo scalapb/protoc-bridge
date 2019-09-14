@@ -24,7 +24,7 @@ name in ThisBuild := "protoc-bridge"
 
 releaseCrossBuild := true
 
-publishTo := sonatypePublishTo.value
+publishTo := sonatypePublishToBundle.value
 
 releasePublishArtifactsAction := PgpKeys.publishSigned.value
 
@@ -37,9 +37,9 @@ releaseProcess := Seq[ReleaseStep](
   commitReleaseVersion,
   tagRelease,
   releaseStepCommandAndRemaining("+publishSigned"),
+  releaseStepCommandAndRemaining("sonatypeBundleRelease"),
   setNextVersion,
   commitNextVersion,
-  releaseStepCommand("sonatypeReleaseAll"),
   pushChanges,
 )
 

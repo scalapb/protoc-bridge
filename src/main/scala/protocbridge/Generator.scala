@@ -16,6 +16,8 @@ sealed trait Generator {
 /** Represents a generator built into protoc.  */
 final case class BuiltinGenerator(name: String, suggestedDependencies: Seq[Artifact] = Nil) extends Generator
 
+final case class PluginGenerator(name: String, suggestedDependencies: Seq[Artifact], path: Option[String]) extends Generator
+
 /** Represents a generator implemented by ProtocCodeGenerator. */
 final case class JvmGenerator(name: String, gen: ProtocCodeGenerator) extends Generator {
   def suggestedDependencies: Seq[Artifact] = gen.suggestedDependencies
@@ -32,6 +34,10 @@ object gens {
 
   def java(runtimeVersion: String): BuiltinGenerator = BuiltinGenerator("java",
     suggestedDependencies = Seq(Artifact(JavaProtobufArtifact, "protobuf-java", runtimeVersion)))
+
+  def plugin(name: String): PluginGenerator = PluginGenerator(name, Nil, None)
+
+  def plugin(name: String, path: String): PluginGenerator = PluginGenerator(name, Nil, Some(path))
 
   val javanano = BuiltinGenerator("javanano")
   val js = BuiltinGenerator("js")

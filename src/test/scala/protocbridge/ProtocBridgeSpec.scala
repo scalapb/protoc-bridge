@@ -6,6 +6,8 @@ import java.util.regex.Pattern
 
 class ProtocBridgeSpec extends FlatSpec with MustMatchers {
   val TmpPath = new File("/tmp").getAbsoluteFile
+  val TmpPath1 = new File("/tmp/x").getAbsoluteFile
+  val TmpPath2 = new File("/tmp/y").getAbsoluteFile
 
   object TestFrontend extends frontend.PluginFrontend {
     type InternalState = Unit
@@ -40,6 +42,49 @@ class ProtocBridgeSpec extends FlatSpec with MustMatchers {
   it should "pass builtin targets correctly" in {
     run(Seq(Target(gens.java, TmpPath))) must be (Seq(s"--java_out=:$TmpPath"))
     run(Seq(Target(gens.java, TmpPath, Seq("x", "y")))) must be (Seq(s"--java_out=x,y:$TmpPath"))
+  }
+
+  it should "pass external plugins correctly" in {
+    run(Seq(Target(gens.plugin("foo"), TmpPath))) must be (Seq(s"--foo_out=:$TmpPath"))
+    run(
+      Seq(
+        Target(gens.plugin("foo"), TmpPath),
+        Target(gens.plugin("bar"), TmpPath2)
+      )
+    ) must be (Seq(s"--foo_out=:$TmpPath", s"--bar_out=:$TmpPath2"))
+
+    run(
+      Seq(
+        Target(gens.plugin("foo", "/path/to/plugin"), TmpPath),
+        Target(gens.plugin("bar"), TmpPath2)
+      )
+    ) must be (Seq("--protoc-gen-foo=/path/to/plugin", s"--foo_out=:$TmpPath", s"--bar_out=:$TmpPath2"))
+
+    run(
+      Seq(
+        Target(gens.plugin("foo", "/path/to/plugin"), TmpPath),
+        Target(gens.plugin("foo", "/path/to/plugin"), TmpPath1),
+        Target(gens.plugin("foo"), TmpPath2),
+        Target(gens.plugin("bar"), TmpPath)
+      )
+    ) must be (Seq(
+      "--protoc-gen-foo=/path/to/plugin",
+      s"--foo_out=:$TmpPath",
+      s"--foo_out=:$TmpPath1",
+      s"--foo_out=:$TmpPath2",
+      s"--bar_out=:$TmpPath"
+    ))
+  }
+
+  it should "not allow ambigious paths for plugins" in {
+    intercept[RuntimeException] {
+      run(
+        Seq(
+          Target(gens.plugin("foo", "/path/to/plugin"), TmpPath1),
+          Target(gens.plugin("foo", "/other/path/to/plugin"), TmpPath1),
+        )
+      )
+    }.getMessage() must be ("Different paths found for the plugin: foo")
   }
 
   val DefineFlag = "--plugin=protoc-gen-jvm_(.*?)=null".r

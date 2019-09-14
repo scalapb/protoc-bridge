@@ -18,16 +18,16 @@ object Target {
     apply(generatorAndOpts._1, outputPath, generatorAndOpts._2)
   }
 
-  implicit def generatorOptsFileTupleToTarget(s: ((Generator, Seq[String]), File)) =
+  implicit def generatorOptsFileTupleToTarget(s: ((Generator, Seq[String]), File)): Target =
     Target(s._1, s._2)
 
-  implicit def generatorFileTupleToTarget(s: (Generator, File)) =
+  implicit def generatorFileTupleToTarget(s: (Generator, File)): Target =
     Target(s._1, s._2)
 
-  implicit def protocCodeGeneratorFile(s: (ProtocCodeGenerator, File)) =
+  implicit def protocCodeGeneratorFile(s: (ProtocCodeGenerator, File)): Target =
     Target(s._1, s._2)
 
-  implicit def protocCodeGeneratorOptsFile(s: ((ProtocCodeGenerator, Seq[String]), File)) =
+  implicit def protocCodeGeneratorOptsFile(s: ((ProtocCodeGenerator, Seq[String]), File)): Target =
     Target(ProtocCodeGenerator.toGenerator(s._1._1), s._2, s._1._2)
 }
 
@@ -53,12 +53,30 @@ object ProtocBridge {
           (gen.name, gen.gen)
       }
 
-    val cmdLine: Seq[String] = targets.map {
+    val cmdLine: Seq[String] = pluginArgs(targets) ++ targets.map {
       p =>
         s"--${p.generator.name}_out=${p.options.mkString(",")}:${p.outputPath.getAbsolutePath}"
     } ++ params
 
     runWithGenerators(protoc, namedGenerators, cmdLine, pluginFrontend)
+  }
+
+  private def pluginArgs(targets: Seq[Target]): Seq[String] = {
+    val pluginsAndPaths: Seq[(String, String)] = targets.collect {
+      case Target(PluginGenerator(pluginName, _, Some(pluginPath)), _, _) =>
+        (pluginName, pluginPath)
+    }.distinct
+
+    val pluginsWithDifferentPaths = pluginsAndPaths.groupBy(_._1).values.collect {
+      case (pluginName, _) :: rest if rest.nonEmpty => pluginName
+    }
+
+    if (pluginsWithDifferentPaths.nonEmpty) {
+      throw new RuntimeException(
+        "Different paths found for the plugin: " + pluginsWithDifferentPaths.mkString(","))
+    }
+
+    pluginsAndPaths.map { case (name, path) => s"--protoc-gen-$name=$path" }
   }
 
   def runWithGenerators[A](protoc: Seq[String] => A,

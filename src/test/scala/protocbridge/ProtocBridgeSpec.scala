@@ -71,7 +71,7 @@ class ProtocBridgeSpec extends FlatSpec with MustMatchers {
       )
     ) must be(
       Seq(
-        "--protoc-gen-foo=/path/to/plugin",
+        "--plugin=protoc-gen-foo=/path/to/plugin",
         s"--foo_out=:$TmpPath",
         s"--bar_out=:$TmpPath2"
       )
@@ -86,7 +86,7 @@ class ProtocBridgeSpec extends FlatSpec with MustMatchers {
       )
     ) must be(
       Seq(
-        "--protoc-gen-foo=/path/to/plugin",
+        "--plugin=protoc-gen-foo=/path/to/plugin",
         s"--foo_out=:$TmpPath",
         s"--foo_out=:$TmpPath1",
         s"--foo_out=:$TmpPath2",

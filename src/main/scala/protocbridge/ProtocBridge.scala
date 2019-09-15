@@ -92,7 +92,7 @@ object ProtocBridge {
       )
     }
 
-    pluginsAndPaths.map { case (name, path) => s"--protoc-gen-$name=$path" }
+    pluginsAndPaths.map { case (name, path) => s"--plugin=protoc-gen-$name=$path" }
   }
 
   def runWithGenerators[A](

@@ -79,23 +79,6 @@ class TargetSpec extends FlatSpec with MustMatchers {
     }
   }
 
-  it should "using ProtocCodeGenerator and assigning random name" in {
-    Target(FoobarGen, TmpPath) must matchPattern {
-      case Target(JvmGenerator(name, FoobarGen), TmpPath, Nil)
-          if name.startsWith("jvm_") =>
-    }
-
-    (FoobarGen -> TmpPath: Target) must matchPattern {
-      case Target(JvmGenerator(name, FoobarGen), TmpPath, Nil)
-          if name.startsWith("jvm_") =>
-    }
-
-    ((FoobarGen, Seq("x", "y")) -> TmpPath: Target) must matchPattern {
-      case Target(JvmGenerator(name, FoobarGen), TmpPath, Seq("x", "y"))
-          if name.startsWith("jvm_") =>
-    }
-  }
-
   it should "allow using the options syntax" in {
     Target(foobarGen("xyz", "wf"), TmpPath) must matchPattern {
       case Target(JvmGenerator("fff", FoobarGen), TmpPath, Seq("xyz", "wf")) =>

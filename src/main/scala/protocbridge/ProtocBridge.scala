@@ -61,13 +61,20 @@ object ProtocBridge {
       pluginFrontend: PluginFrontend = PluginFrontend.newInstance
   ): A = {
 
+    // The same JvmGenerator might be passed several times, but requires separate frontends
+    val targetsSuffixed = targets.zipWithIndex.map {
+      case (t @ Target(gen: JvmGenerator, _, _), i) =>
+        t.copy(gen.copy(name = s"${gen.name}_$i"))
+      case (t, _) => t
+    }
+
     val namedGenerators: Seq[(String, ProtocCodeGenerator)] =
-      targets.collect {
+      targetsSuffixed.collect {
         case Target(gen: JvmGenerator, _, _) =>
           (gen.name, gen.gen)
       }
 
-    val cmdLine: Seq[String] = pluginArgs(targets) ++ targets.map { p =>
+    val cmdLine: Seq[String] = pluginArgs(targets) ++ targetsSuffixed.map { p =>
       s"--${p.generator.name}_out=${p.options.mkString(",")}:${p.outputPath.getAbsolutePath}"
     } ++ params
 
@@ -92,7 +99,9 @@ object ProtocBridge {
       )
     }
 
-    pluginsAndPaths.map { case (name, path) => s"--plugin=protoc-gen-$name=$path" }
+    pluginsAndPaths.map {
+      case (name, path) => s"--plugin=protoc-gen-$name=$path"
+    }
   }
 
   def runWithGenerators[A](

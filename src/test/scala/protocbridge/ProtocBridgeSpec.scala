@@ -121,11 +121,21 @@ class ProtocBridgeSpec extends FlatSpec with MustMatchers {
     }
   }
 
-  it should "allow using fooBarGen" in {
-    run(Seq(Target(foobarGen("x", "y"), TmpPath))) must be(
+  it should "allow using fooBarGen multiple times" in {
+    run(
       Seq(
-        "--plugin=protoc-gen-fff=null",
-        s"--fff_out=x,y:$TmpPath"
+        Target(foobarGen("x", "y"), TmpPath),
+        FoobarGen -> TmpPath1,
+        Target(foobarGen("foo", "bar"), TmpPath2)
+      )
+    ) must be(
+      Seq(
+        "--plugin=protoc-gen-fff_0=null",
+        "--plugin=protoc-gen-jvm_1=null",
+        "--plugin=protoc-gen-fff_2=null",
+        s"--fff_0_out=x,y:$TmpPath",
+        s"--jvm_1_out=:$TmpPath1",
+        s"--fff_2_out=foo,bar:$TmpPath2"
       )
     )
   }

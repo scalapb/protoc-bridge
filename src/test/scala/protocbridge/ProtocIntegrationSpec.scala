@@ -48,13 +48,17 @@ class ProtocIntegrationSpec extends FlatSpec with MustMatchers {
     val protoDir = new File(getClass.getResource("/").getFile).getAbsolutePath
 
     val javaOutDir = Files.createTempDirectory("javaout").toFile
-    val testOutDir = Files.createTempDirectory("testout").toFile
+    val testOutDirs = (0 to 4).map(i => Files.createTempDirectory(s"testout$i").toFile)
 
     ProtocBridge.run(
       args => com.github.os72.protocjar.Protoc.runProtoc(args.toArray),
       Seq(
         protocbridge.gens.java("3.8.0") -> javaOutDir,
-        TestJvmPlugin -> testOutDir
+        TestJvmPlugin -> testOutDirs(0),
+        TestJvmPlugin -> testOutDirs(1),
+        JvmGenerator("foo", TestJvmPlugin) -> testOutDirs(2),
+        JvmGenerator("foo", TestJvmPlugin) -> testOutDirs(3),
+        JvmGenerator("bar", TestJvmPlugin) -> testOutDirs(4)
       ),
       Seq(protoFile, "-I", protoDir)
     ) must be(0)
@@ -62,13 +66,16 @@ class ProtocIntegrationSpec extends FlatSpec with MustMatchers {
     Files.exists(javaOutDir.toPath.resolve("mytest").resolve("Test.java")) must be(
       true
     )
-    val msglist = testOutDir.toPath.resolve("msglist.txt")
-    Files.exists(msglist) must be(true)
-    Source.fromFile(msglist.toFile).getLines().toSeq must be(
-      Seq(
-        "test.proto:mytest.TestMsg",
-        "test.proto:mytest.AnotherMsg"
+
+    testOutDirs.foreach { testOutDir =>
+      val msglist = testOutDir.toPath.resolve("msglist.txt")
+      Files.exists(msglist) must be(true)
+      Source.fromFile(msglist.toFile).getLines().toSeq must be(
+        Seq(
+          "test.proto:mytest.TestMsg",
+          "test.proto:mytest.AnotherMsg"
+        )
       )
-    )
+    }
   }
 }

@@ -10,7 +10,6 @@ trait ProtocCodeGenerator {
 object ProtocCodeGenerator {
   import scala.language.implicitConversions
 
-  implicit def toGenerator(p: ProtocCodeGenerator): Generator = {
-    JvmGenerator("jvm_" + scala.util.Random.alphanumeric.take(8).mkString, p)
-  }
+  implicit def toGenerator(p: ProtocCodeGenerator): Generator =
+    JvmGenerator("jvm", p)
 }

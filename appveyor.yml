@@ -7,8 +7,8 @@ environment:
   matrix:
   - SCALA_VERSION: 2.10.7
   - SCALA_VERSION: 2.11.12
-  - SCALA_VERSION: 2.12.7
-  - SCALA_VERSION: 2.13.0
+  - SCALA_VERSION: 2.12.10
+  - SCALA_VERSION: 2.13.1
 
 install:
   - ps: |

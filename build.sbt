@@ -14,7 +14,7 @@ scalacOptions in ThisBuild ++= {
 javacOptions in ThisBuild ++= {
   CrossVersion.partialVersion(scalaVersion.value) match {
     case Some((2, v)) if v <= 11 => List("-target", "7", "-source", "7")
-    case _ => Nil
+    case _ => List("-target", "8", "-source", "8")
   }
 }
 

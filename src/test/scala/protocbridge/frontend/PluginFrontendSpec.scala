@@ -3,13 +3,14 @@ package protocbridge.frontend
 import java.io.ByteArrayInputStream
 
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
-import org.scalatest.{FlatSpec, MustMatchers}
+import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.must.Matchers
 
 class PluginFrontendSpec
-    extends FlatSpec
-    with MustMatchers
-    with GeneratorDrivenPropertyChecks {
+    extends AnyFlatSpec
+    with Matchers
+    with ScalaCheckDrivenPropertyChecks {
   def expected(error: String) =
     CodeGeneratorResponse.newBuilder().setError(error).build()
 

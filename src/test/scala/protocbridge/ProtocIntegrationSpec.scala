@@ -8,9 +8,10 @@ import com.google.protobuf.compiler.PluginProtos.{
   CodeGeneratorRequest,
   CodeGeneratorResponse
 }
-import org.scalatest.{FlatSpec, MustMatchers}
 
 import scala.io.Source
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.must.Matchers
 
 object TestJvmPlugin extends ProtocCodeGenerator {
   import collection.JavaConverters._
@@ -41,7 +42,7 @@ object TestJvmPlugin extends ProtocCodeGenerator {
   }
 }
 
-class ProtocIntegrationSpec extends FlatSpec with MustMatchers {
+class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
   "ProtocBridge.run" should "invoke JVM and Java plugin properly" in {
     val protoFile =
       new File(getClass.getResource("/test.proto").getFile).getAbsolutePath

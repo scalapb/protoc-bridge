@@ -2,12 +2,13 @@ package protocbridge.frontend
 
 import java.io.ByteArrayInputStream
 
-import org.scalatest.{FlatSpec, MustMatchers}
 import protocbridge.ProtocCodeGenerator
 
 import scala.sys.process.ProcessLogger
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.must.Matchers
 
-class WindowsPluginFrontendSpec extends FlatSpec with MustMatchers {
+class WindowsPluginFrontendSpec extends AnyFlatSpec with Matchers {
   if (PluginFrontend.isWindows) {
     it must "execute a program that forwards input and output to given stream" in {
       val toSend = "ping"

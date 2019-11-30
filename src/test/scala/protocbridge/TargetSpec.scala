@@ -4,8 +4,10 @@ import org.scalatest._
 
 import java.io.File
 import Target.builtin
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.must.Matchers
 
-class TargetSpec extends FlatSpec with MustMatchers {
+class TargetSpec extends AnyFlatSpec with Matchers {
   val TmpPath = new File("/tmp")
 
   object FoobarGen extends ProtocCodeGenerator {

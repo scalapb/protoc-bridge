@@ -3,8 +3,10 @@ package protocbridge
 import org.scalatest._
 import java.io.File
 import java.util.regex.Pattern
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.must.Matchers
 
-class ProtocBridgeSpec extends FlatSpec with MustMatchers {
+class ProtocBridgeSpec extends AnyFlatSpec with Matchers {
   val TmpPath = new File("/tmp").getAbsoluteFile
   val TmpPath1 = new File("/tmp/x").getAbsoluteFile
   val TmpPath2 = new File("/tmp/y").getAbsoluteFile

@@ -47,5 +47,5 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.8" % "test",
   "org.scalacheck" %% "scalacheck" % "1.14.3" % "test",
   "com.google.protobuf" % "protobuf-java" % "3.11.3" % "test",
-  "com.github.os72" % "protoc-jar" % "3.10.1" % "test"
+  "com.github.os72" % "protoc-jar" % "3.11.1" % "test"
 )

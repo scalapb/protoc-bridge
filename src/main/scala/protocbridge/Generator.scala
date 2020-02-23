@@ -41,7 +41,7 @@ object gens {
 
   val cpp = BuiltinGenerator("cpp")
   val csharp = BuiltinGenerator("csharp")
-  val java: BuiltinGenerator = java("3.7.1")
+  val java: BuiltinGenerator = java("3.11.4")
 
   def java(runtimeVersion: String): BuiltinGenerator =
     BuiltinGenerator(

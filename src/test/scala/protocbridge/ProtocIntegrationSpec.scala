@@ -12,6 +12,8 @@ import com.google.protobuf.compiler.PluginProtos.{
 import scala.io.Source
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
+import protocbridge.codegen.CodeGenApp
+import protocbridge.codegen.{CodeGenRequest, CodeGenResponse}
 
 object TestJvmPlugin extends ProtocCodeGenerator {
   import collection.JavaConverters._
@@ -42,14 +44,33 @@ object TestJvmPlugin extends ProtocCodeGenerator {
   }
 }
 
+object TestCodeGenApp extends CodeGenApp {
+  def process(request: CodeGenRequest): CodeGenResponse = {
+    if (request.filesToGenerate.exists(_.getName().contains("error")))
+      CodeGenResponse.fail("Error!")
+    else
+      CodeGenResponse.succeed(
+        Seq(
+          CodeGeneratorResponse.File
+            .newBuilder()
+            .setName("out.out")
+            .setContent("out!")
+            .build()
+        )
+      )
+  }
+}
+
 class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
   "ProtocBridge.run" should "invoke JVM and Java plugin properly" in {
     val protoFile =
       new File(getClass.getResource("/test.proto").getFile).getAbsolutePath
     val protoDir = new File(getClass.getResource("/").getFile).getAbsolutePath
 
-    val javaOutDir = Files.createTempDirectory("javaout").toFile
-    val testOutDirs = (0 to 4).map(i => Files.createTempDirectory(s"testout$i").toFile)
+    val javaOutDir = Files.createTempDirectory("javaout").toFile()
+    val testOutDirs =
+      (0 to 4).map(i => Files.createTempDirectory(s"testout$i").toFile())
+    val cgOutDir = Files.createTempDirectory("testout_cg").toFile()
 
     ProtocBridge.run(
       args => com.github.os72.protocjar.Protoc.runProtoc(args.toArray),
@@ -59,7 +80,8 @@ class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
         TestJvmPlugin -> testOutDirs(1),
         JvmGenerator("foo", TestJvmPlugin) -> testOutDirs(2),
         JvmGenerator("foo", TestJvmPlugin) -> testOutDirs(3),
-        JvmGenerator("bar", TestJvmPlugin) -> testOutDirs(4)
+        JvmGenerator("bar", TestJvmPlugin) -> testOutDirs(4),
+        JvmGenerator("cg", TestCodeGenApp) -> cgOutDir
       ),
       Seq(protoFile, "-I", protoDir)
     ) must be(0)
@@ -78,5 +100,25 @@ class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
         )
       )
     }
+    Source
+      .fromFile(cgOutDir.toPath.resolve("out.out").toFile)
+      .getLines
+      .toSeq must be(
+      Seq("out!")
+    )
+  }
+
+  it should "fail on plugin profile" in {
+    val protoFile =
+      new File(getClass.getResource("/error.proto").getFile).getAbsolutePath
+    val protoDir = new File(getClass.getResource("/").getFile).getAbsolutePath
+    val cgOutDir = Files.createTempDirectory("testout_cg").toFile()
+    ProtocBridge.run(
+      args => com.github.os72.protocjar.Protoc.runProtoc(args.toArray),
+      Seq(
+        JvmGenerator("cg", TestCodeGenApp) -> cgOutDir
+      ),
+      Seq(protoFile, "-I", protoDir)
+    ) must be(1)
   }
 }

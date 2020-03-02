@@ -2,21 +2,11 @@ import ReleaseTransformations._
 
 scalaVersion in ThisBuild := "2.12.10"
 
-crossScalaVersions in ThisBuild := Seq("2.10.7", "2.11.12", "2.12.10", "2.13.1")
+crossScalaVersions in ThisBuild := Seq("2.12.10", "2.13.1")
 
-scalacOptions in ThisBuild ++= {
-  CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, v)) if v <= 11 => List("-target:jvm-1.7")
-    case _ => Nil
-  }
-}
+scalacOptions in ThisBuild ++= List("-target:jvm-1.8")
 
-javacOptions in ThisBuild ++= {
-  CrossVersion.partialVersion(scalaVersion.value) match {
-    case Some((2, v)) if v <= 11 => List("-target", "7", "-source", "7")
-    case _ => List("-target", "8", "-source", "8")
-  }
-}
+javacOptions in ThisBuild ++= List("-target", "8", "-source", "8")
 
 organization in ThisBuild := "com.thesamet.scalapb"
 

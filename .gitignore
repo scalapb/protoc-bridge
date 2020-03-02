@@ -1,5 +1,6 @@
 .bloop/
 .metals/
+metals.sbt
 project/.bloop/
 
 *.class

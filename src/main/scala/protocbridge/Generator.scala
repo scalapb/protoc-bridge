@@ -28,7 +28,7 @@ final case class PluginGenerator(
 ) extends Generator
 
 /** Represents a generator built into protoc, to be used with a file target. */
-final case object DescriptorSetGenerator extends Generator {
+final case class DescriptorSetGenerator() extends Generator {
   override val name = "descriptor_set"
   override val suggestedDependencies = Nil
 }
@@ -69,5 +69,5 @@ object gens {
   val go = BuiltinGenerator("go")
   val swagger = BuiltinGenerator("swagger")
   val gateway = BuiltinGenerator("grpc-gateway")
-  val descriptorset = DescriptorSetGenerator
+  val descriptorset = DescriptorSetGenerator()
 }

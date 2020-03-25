@@ -15,7 +15,7 @@ sealed trait Generator {
   def suggestedDependencies: Seq[Artifact]
 }
 
-/** Represents a generator built into protoc.  */
+/** Represents a generator built into protoc, to be used with a directory target. */
 final case class BuiltinGenerator(
     name: String,
     suggestedDependencies: Seq[Artifact] = Nil
@@ -26,6 +26,12 @@ final case class PluginGenerator(
     suggestedDependencies: Seq[Artifact],
     path: Option[String]
 ) extends Generator
+
+/** Represents a generator built into protoc, to be used with a file target. */
+final case class DescriptorSetGenerator() extends Generator {
+  override val name = "descriptor_set"
+  override val suggestedDependencies = Nil
+}
 
 /** Represents a generator implemented by ProtocCodeGenerator. */
 final case class JvmGenerator(name: String, gen: ProtocCodeGenerator)
@@ -63,4 +69,5 @@ object gens {
   val go = BuiltinGenerator("go")
   val swagger = BuiltinGenerator("swagger")
   val gateway = BuiltinGenerator("grpc-gateway")
+  val descriptorSet = DescriptorSetGenerator()
 }

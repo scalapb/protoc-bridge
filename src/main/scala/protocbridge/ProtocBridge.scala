@@ -75,7 +75,9 @@ object ProtocBridge {
       }
 
     val cmdLine: Seq[String] = pluginArgs(targets) ++ targetsSuffixed.map { p =>
-      s"--${p.generator.name}_out=${p.options.mkString(",")}:${p.outputPath.getAbsolutePath}"
+      val maybeOptions =
+        if (p.options.nonEmpty) p.options.mkString("", ",", ":") else ""
+      s"--${p.generator.name}_out=$maybeOptions${p.outputPath.getAbsolutePath}"
     } ++ params
 
     runWithGenerators(protoc, namedGenerators, cmdLine, pluginFrontend)

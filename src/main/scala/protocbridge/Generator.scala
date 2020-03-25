@@ -69,5 +69,5 @@ object gens {
   val go = BuiltinGenerator("go")
   val swagger = BuiltinGenerator("swagger")
   val gateway = BuiltinGenerator("grpc-gateway")
-  val descriptorset = DescriptorSetGenerator()
+  val descriptorSet = DescriptorSetGenerator()
 }

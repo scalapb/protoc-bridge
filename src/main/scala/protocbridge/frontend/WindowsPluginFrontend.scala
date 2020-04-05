@@ -23,14 +23,14 @@ object WindowsPluginFrontend extends PluginFrontend {
     val state = createWindowsScript(ss.getLocalPort)
 
     Future {
-      blocking {
+      //blocking {
         val client = ss.accept()
         val response =
           PluginFrontend.runWithInputStream(plugin, client.getInputStream)
         client.getOutputStream.write(response)
         client.close()
         ss.close()
-      }
+      //}
     }
 
     (state.batFile, state)

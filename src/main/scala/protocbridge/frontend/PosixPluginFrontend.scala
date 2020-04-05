@@ -30,7 +30,7 @@ object PosixPluginFrontend extends PluginFrontend {
     val sh = createShellScript(inputPipe, outputPipe)
 
     Future {
-      blocking {
+      //blocking {
         val fsin = Files.newInputStream(inputPipe)
         val response = PluginFrontend.runWithInputStream(plugin, fsin)
         fsin.close()
@@ -38,7 +38,7 @@ object PosixPluginFrontend extends PluginFrontend {
         val fsout = Files.newOutputStream(outputPipe)
         fsout.write(response)
         fsout.close()
-      }
+      //}
     }
     (sh, InternalState(inputPipe, outputPipe, tempDirPath, sh))
   }

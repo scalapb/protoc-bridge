@@ -5,6 +5,7 @@ import java.nio.file.{Files, Path}
 import protocbridge.ProtocCodeGenerator
 import java.nio.file.attribute.PosixFilePermission
 
+import scala.concurrent.blocking
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.collection.JavaConverters._
@@ -29,13 +30,15 @@ object PosixPluginFrontend extends PluginFrontend {
     val sh = createShellScript(inputPipe, outputPipe)
 
     Future {
-      val fsin = Files.newInputStream(inputPipe)
-      val response = PluginFrontend.runWithInputStream(plugin, fsin)
-      fsin.close()
+      blocking {
+        val fsin = Files.newInputStream(inputPipe)
+        val response = PluginFrontend.runWithInputStream(plugin, fsin)
+        fsin.close()
 
-      val fsout = Files.newOutputStream(outputPipe)
-      fsout.write(response)
-      fsout.close()
+        val fsout = Files.newOutputStream(outputPipe)
+        fsout.write(response)
+        fsout.close()
+      }
     }
     (sh, InternalState(inputPipe, outputPipe, tempDirPath, sh))
   }

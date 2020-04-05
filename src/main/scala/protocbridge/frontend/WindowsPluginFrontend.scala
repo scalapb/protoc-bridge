@@ -5,6 +5,8 @@ import java.nio.file.{Files, Path, Paths}
 
 import protocbridge.ProtocCodeGenerator
 
+import scala.concurrent.blocking
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -21,12 +23,14 @@ object WindowsPluginFrontend extends PluginFrontend {
     val state = createWindowsScript(ss.getLocalPort)
 
     Future {
-      val client = ss.accept()
-      val response =
-        PluginFrontend.runWithInputStream(plugin, client.getInputStream)
-      client.getOutputStream.write(response)
-      client.close()
-      ss.close()
+      blocking {
+        val client = ss.accept()
+        val response =
+          PluginFrontend.runWithInputStream(plugin, client.getInputStream)
+        client.getOutputStream.write(response)
+        client.close()
+        ss.close()
+      }
     }
 
     (state.batFile, state)

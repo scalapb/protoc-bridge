@@ -2,6 +2,7 @@ package protocbridge
 
 import java.io.File
 import java.nio.file.Files
+import java.util.concurrent.Executors
 
 import com.google.protobuf.Descriptors.FileDescriptor
 import com.google.protobuf.compiler.PluginProtos.{
@@ -9,6 +10,8 @@ import com.google.protobuf.compiler.PluginProtos.{
   CodeGeneratorResponse
 }
 
+import scala.concurrent.duration.{Duration, SECONDS}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.io.Source
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
@@ -16,6 +19,7 @@ import protocbridge.codegen.CodeGenApp
 import protocbridge.codegen.{CodeGenRequest, CodeGenResponse}
 
 object TestJvmPlugin extends ProtocCodeGenerator {
+
   import collection.JavaConverters._
 
   override def run(in: Array[Byte]): Array[Byte] = {
@@ -120,5 +124,39 @@ class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
       ),
       Seq(protoFile, "-I", protoDir)
     ) must be(1)
+  }
+
+  it should "not deadlock for highly concurrent invocations" in {
+    val availableProcessors = Runtime.getRuntime.availableProcessors
+    assert(availableProcessors > 1, "Several vCPUs needed for the test to be relevant")
+
+    val parallelProtocInvocations = availableProcessors * 8
+    val generatorsByInvocation = availableProcessors * 8
+
+    val protoFile =
+      new File(getClass.getResource("/test.proto").getFile).getAbsolutePath
+    val protoDir = new File(getClass.getResource("/").getFile).getAbsolutePath
+
+    implicit val ec = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(parallelProtocInvocations))
+
+    val invocations = List.fill(parallelProtocInvocations) {
+      Future(
+        ProtocBridge.run(
+          args => com.github.os72.protocjar.Protoc.runProtoc(args.toArray),
+          List.fill(generatorsByInvocation)(
+            Target(
+              JvmGenerator("foo", TestJvmPlugin),
+              Files.createTempDirectory(s"foo").toFile
+            )
+          ),
+          Seq(protoFile, "-I", protoDir)
+        )
+      )
+    }
+
+    Await.result(
+      Future.sequence(invocations),
+      Duration(60, SECONDS)
+    ) must be(List.fill(parallelProtocInvocations)(0))
   }
 }

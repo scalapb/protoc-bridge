@@ -2,7 +2,7 @@ import ReleaseTransformations._
 
 scalaVersion in ThisBuild := "2.12.10"
 
-crossScalaVersions in ThisBuild := Seq("2.12.10", "2.13.1")
+crossScalaVersions in ThisBuild := Seq("2.12.10", "2.13.2")
 
 scalacOptions in ThisBuild ++= List("-target:jvm-1.8")
 

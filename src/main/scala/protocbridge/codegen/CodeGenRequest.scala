@@ -16,10 +16,13 @@ case class CodeGenRequest(
 
 object CodeGenRequest {
   def apply(req: CodeGeneratorRequest) = {
-    val filesMap = fileDescriptorsByName(req.getProtoFileList().asScala.toVector)
+    val filesMap = fileDescriptorsByName(
+      req.getProtoFileList().asScala.toVector
+    )
     new CodeGenRequest(
       parameter = req.getParameter(),
-      filesToGenerate = req.getFileToGenerateList().asScala.toVector.map(filesMap),
+      filesToGenerate =
+        req.getFileToGenerateList().asScala.toVector.map(filesMap),
       allProtos = filesMap.values.toVector,
       compilerVersion =
         if (req.hasCompilerVersion()) Some(req.getCompilerVersion()) else None

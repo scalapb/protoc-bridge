@@ -39,6 +39,36 @@ final case class JvmGenerator(name: String, gen: ProtocCodeGenerator)
   def suggestedDependencies: Seq[Artifact] = gen.suggestedDependencies
 }
 
+/** Represents a JvmGenerator that needs to be dynamically loaded from an artifact.
+  * This allows to run each JvmGenerator in its own classloader and thus avoid dependency
+  * conflicts between plugins or between plugins and the container (such as sbt).
+  *
+  * The primary problem triggering this is that SBT ships with an old version of protobuf-java
+  * that is not binary compatible with recent versions. In addition, SBT depends on ScalaPB's runtime,
+  * so ScalaPB plugins can't use ScalaPB itself without running a risk of conflict.
+  *
+  * artifact: Artifact containing the generator class.
+  * generatorClass: A scala object that implements ProtocCodeGenerator
+  */
+final case class SandboxedJvmGenerator(
+    name: String,
+    artifact: Artifact,
+    generatorClass: String,
+    suggestedDependencies: Seq[Artifact]
+) extends Generator
+
+object SandboxedJvmGenerator {
+  def load(gen: SandboxedJvmGenerator, loader: ClassLoader): JvmGenerator = {
+    val cls = loader.loadClass(gen.generatorClass)
+    val module = cls.getField("MODULE$").get(null)
+    val runMethod = module.getClass().getMethod("run", classOf[Array[Byte]])
+    JvmGenerator(gen.name, new ProtocCodeGenerator {
+      def run(request: Array[Byte]): Array[Byte] =
+        runMethod.invoke(module, request).asInstanceOf[Array[Byte]]
+    })
+  }
+}
+
 object gens {
   // Prevent the organization name from getting shaded...
   // See https://github.com/scalapb/ScalaPB/issues/150

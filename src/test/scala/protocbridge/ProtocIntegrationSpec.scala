@@ -128,7 +128,10 @@ class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
 
   it should "not deadlock for highly concurrent invocations" in {
     val availableProcessors = Runtime.getRuntime.availableProcessors
-    assert(availableProcessors > 1, "Several vCPUs needed for the test to be relevant")
+    assert(
+      availableProcessors > 1,
+      "Several vCPUs needed for the test to be relevant"
+    )
 
     val parallelProtocInvocations = availableProcessors * 8
     val generatorsByInvocation = availableProcessors * 8
@@ -137,7 +140,9 @@ class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
       new File(getClass.getResource("/test.proto").getFile).getAbsolutePath
     val protoDir = new File(getClass.getResource("/").getFile).getAbsolutePath
 
-    implicit val ec = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(parallelProtocInvocations))
+    implicit val ec = ExecutionContext.fromExecutorService(
+      Executors.newFixedThreadPool(parallelProtocInvocations)
+    )
 
     val invocations = List.fill(parallelProtocInvocations) {
       Future(

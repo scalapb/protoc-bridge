@@ -44,6 +44,27 @@ object Target {
 }
 
 object ProtocBridge {
+  def run[A](
+      protoc: Seq[String] => A,
+      targets: Seq[Target],
+      params: Seq[String],
+  ): A = run(protoc, targets, params, PluginFrontend.newInstance)
+
+  def run[A](
+      protoc: Seq[String] => A,
+      targets: Seq[Target],
+      params: Seq[String],
+      pluginFrontend: PluginFrontend
+  ): A = run(
+    protoc,
+    targets,
+    params,
+    pluginFrontend,
+    plugin =>
+      throw new RuntimeException(
+        s"The version of sbt-protoc you are using is incompatible with '${plugin.name}' code generator. Please update sbt-protoc to a version >= 0.99.32"
+      )
+  )
 
   /*** Runs protoc with a given set of targets.
     *
@@ -51,6 +72,7 @@ object ProtocBridge {
     * @param targets a sequence of generators to invokes
     * @param params a sequence of additional params to pass to protoc
     * @param pluginFrontend frontend to use.
+    * @param classLoader function that provided a sandboxed ClassLoader for an artifact.
     * @tparam A
     * @return the return value from the protoc function.
     */
@@ -58,13 +80,16 @@ object ProtocBridge {
       protoc: Seq[String] => A,
       targets: Seq[Target],
       params: Seq[String],
-      pluginFrontend: PluginFrontend = PluginFrontend.newInstance
+      pluginFrontend: PluginFrontend,
+      classLoader: SandboxedJvmGenerator => ClassLoader
   ): A = {
 
     // The same JvmGenerator might be passed several times, but requires separate frontends
     val targetsSuffixed = targets.zipWithIndex.map {
       case (t @ Target(gen: JvmGenerator, _, _), i) =>
-        t.copy(gen.copy(name = s"${gen.name}_$i"))
+        t.copy(generator = gen.copy(name = s"${gen.name}_$i"))
+      case (t @ Target(gen: SandboxedJvmGenerator, _, _), i) =>
+        t.copy(generator = SandboxedJvmGenerator.load(gen, classLoader(gen)))
       case (t, _) => t
     }
 

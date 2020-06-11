@@ -65,6 +65,23 @@ object TestCodeGenApp extends CodeGenApp {
   }
 }
 
+object TestParameters extends CodeGenApp {
+
+  val outputFilename = "parameters.txt"
+
+  def process(request: CodeGenRequest): CodeGenResponse = {
+    CodeGenResponse.succeed(
+      Seq(
+        CodeGeneratorResponse.File
+          .newBuilder()
+          .setName(outputFilename)
+          .setContent(request.parameter)
+          .build()
+      )
+    )
+  }
+}
+
 class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
   "ProtocBridge.run" should "invoke JVM and Java plugin properly" in {
     val protoFile =
@@ -75,6 +92,7 @@ class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
     val testOutDirs =
       (0 to 4).map(i => Files.createTempDirectory(s"testout$i").toFile())
     val cgOutDir = Files.createTempDirectory("testout_cg").toFile()
+    val paramOutDir = Files.createTempDirectory("testout_param").toFile()
 
     ProtocBridge.run(
       args => com.github.os72.protocjar.Protoc.runProtoc(args.toArray),
@@ -85,7 +103,8 @@ class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
         JvmGenerator("foo", TestJvmPlugin) -> testOutDirs(2),
         JvmGenerator("foo", TestJvmPlugin) -> testOutDirs(3),
         JvmGenerator("bar", TestJvmPlugin) -> testOutDirs(4),
-        JvmGenerator("cg", TestCodeGenApp) -> cgOutDir
+        JvmGenerator("cg", TestCodeGenApp) -> cgOutDir,
+        (JvmGenerator("param", TestParameters), Seq("foo", "bar:value", "baz=qux")) -> paramOutDir
       ),
       Seq(protoFile, "-I", protoDir)
     ) must be(0)
@@ -94,22 +113,28 @@ class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
       true
     )
 
-    testOutDirs.foreach { testOutDir =>
-      val msglist = testOutDir.toPath.resolve("msglist.txt")
-      Files.exists(msglist) must be(true)
-      Source.fromFile(msglist.toFile).getLines().toSeq must be(
-        Seq(
-          "test.proto:mytest.TestMsg",
-          "test.proto:mytest.AnotherMsg"
-        )
-      )
+    def getLines(s: Source): Seq[String] = {
+      val lines = s.getLines.toList // use toList for strict evaluation
+      s.close()
+      lines
     }
-    Source
-      .fromFile(cgOutDir.toPath.resolve("out.out").toFile)
-      .getLines
-      .toSeq must be(
-      Seq("out!")
-    )
+
+    def fileMustBeLines(file: File, expected: Seq[String]) = {
+      file.exists() must be(true)
+      getLines(Source.fromFile(file)) must be(expected)
+    }
+
+    testOutDirs.foreach { testOutDir =>
+      val expected =  Seq(
+        "test.proto:mytest.TestMsg",
+        "test.proto:mytest.AnotherMsg"
+      )
+      fileMustBeLines(new File(testOutDir, "msglist.txt"), expected)
+    }
+
+    fileMustBeLines(new File(cgOutDir, "out.out"), Seq("out!"))
+
+    fileMustBeLines(new File(paramOutDir, TestParameters.outputFilename), Seq("foo,bar:value,baz=qux"))
   }
 
   it should "fail on plugin profile" in {

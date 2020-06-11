@@ -44,14 +44,14 @@ class ProtocBridgeSpec extends AnyFlatSpec with Matchers {
       Seq(s"--java_out=$TmpPath")
     )
     run(Seq(Target(Target.builtin("java", Seq("x", "y", "z")), TmpPath))) must be(
-      Seq(s"--java_out=x,y,z:$TmpPath")
+      Seq(s"--java_out=$TmpPath", "--java_opt=x,y,z")
     )
   }
 
   it should "pass builtin targets correctly" in {
     run(Seq(Target(gens.java, TmpPath))) must be(Seq(s"--java_out=$TmpPath"))
     run(Seq(Target(gens.java, TmpPath, Seq("x", "y")))) must be(
-      Seq(s"--java_out=x,y:$TmpPath")
+      Seq(s"--java_out=$TmpPath", "--java_opt=x,y")
     )
   }
 
@@ -111,7 +111,7 @@ class ProtocBridgeSpec extends AnyFlatSpec with Matchers {
   val DefineFlag = "--plugin=protoc-gen-jvm_(.*?)=null".r
   val UseFlag = s"--jvm_(.*?)_out=${Pattern.quote(TmpPath.toString)}".r
   val UseFlagParams =
-    s"--jvm_(.*?)_out=x,y:${Pattern.quote(TmpPath.toString)}".r
+    s"--jvm_(.*?)_opt=x,y".r
 
   it should "allow using FooBarGen" in {
     run(Seq(Target(FoobarGen, TmpPath))) match {
@@ -119,7 +119,7 @@ class ProtocBridgeSpec extends AnyFlatSpec with Matchers {
     }
 
     run(Seq(Target(FoobarGen, TmpPath, Seq("x", "y")))) match {
-      case Seq(DefineFlag(r), UseFlagParams(s)) if r == s =>
+      case Seq(DefineFlag(r), UseFlag(s), UseFlagParams(o)) if r == s && r == o =>
     }
   }
 
@@ -135,9 +135,11 @@ class ProtocBridgeSpec extends AnyFlatSpec with Matchers {
         "--plugin=protoc-gen-fff_0=null",
         "--plugin=protoc-gen-jvm_1=null",
         "--plugin=protoc-gen-fff_2=null",
-        s"--fff_0_out=x,y:$TmpPath",
+        s"--fff_0_out=$TmpPath",
+        s"--fff_0_opt=x,y",
         s"--jvm_1_out=$TmpPath1",
-        s"--fff_2_out=foo,bar:$TmpPath2"
+        s"--fff_2_out=$TmpPath2",
+        s"--fff_2_opt=foo,bar"
       )
     )
   }

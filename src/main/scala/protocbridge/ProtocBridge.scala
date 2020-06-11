@@ -99,10 +99,11 @@ object ProtocBridge {
           (gen.name, gen.gen)
       }
 
-    val cmdLine: Seq[String] = pluginArgs(targets) ++ targetsSuffixed.map { p =>
-      val maybeOptions =
-        if (p.options.nonEmpty) p.options.mkString("", ",", ":") else ""
-      s"--${p.generator.name}_out=$maybeOptions${p.outputPath.getAbsolutePath}"
+    val cmdLine: Seq[String] = pluginArgs(targets) ++ targetsSuffixed.flatMap { p =>
+      val maybeOptions = if(p.options.isEmpty) Nil else {
+        s"--${p.generator.name}_opt=${p.options.mkString(",")}" :: Nil
+      }
+      s"--${p.generator.name}_out=${p.outputPath.getAbsolutePath}" :: maybeOptions
     } ++ params
 
     runWithGenerators(protoc, namedGenerators, cmdLine, pluginFrontend)

@@ -15,12 +15,11 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.io.Source
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
-import protocbridge.codegen.CodeGenApp
-import protocbridge.codegen.{CodeGenRequest, CodeGenResponse}
+import TestUtils.readLines
 
 object TestJvmPlugin extends ProtocCodeGenerator {
 
-  import collection.JavaConverters._
+  import scala.jdk.CollectionConverters._
 
   override def run(in: Array[Byte]): Array[Byte] = {
     val request = CodeGeneratorRequest.parseFrom(in)
@@ -44,41 +43,26 @@ object TestJvmPlugin extends ProtocCodeGenerator {
       .addFileBuilder()
       .setContent(content)
       .setName("msglist.txt")
+    responseBuilder
+      .addFileBuilder()
+      .setContent(
+        if (request.getParameter().isEmpty()) "Empty"
+        else request.getParameter()
+      )
+      .setName("parameters.txt")
+
     responseBuilder.build().toByteArray
   }
 }
 
-object TestCodeGenApp extends CodeGenApp {
-  def process(request: CodeGenRequest): CodeGenResponse = {
-    if (request.filesToGenerate.exists(_.getName().contains("error")))
-      CodeGenResponse.fail("Error!")
-    else
-      CodeGenResponse.succeed(
-        Seq(
-          CodeGeneratorResponse.File
-            .newBuilder()
-            .setName("out.out")
-            .setContent("out!")
-            .build()
-        )
-      )
-  }
-}
-
-object TestParameters extends CodeGenApp {
-
-  val outputFilename = "parameters.txt"
-
-  def process(request: CodeGenRequest): CodeGenResponse = {
-    CodeGenResponse.succeed(
-      Seq(
-        CodeGeneratorResponse.File
-          .newBuilder()
-          .setName(outputFilename)
-          .setContent(request.parameter)
-          .build()
-      )
-    )
+object TestUtils {
+  def readLines(file: File) = {
+    val s = Source.fromFile(file)
+    try {
+      Source.fromFile(file).getLines().toVector
+    } finally {
+      s.close()
+    }
   }
 }
 
@@ -91,8 +75,6 @@ class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
     val javaOutDir = Files.createTempDirectory("javaout").toFile()
     val testOutDirs =
       (0 to 4).map(i => Files.createTempDirectory(s"testout$i").toFile())
-    val cgOutDir = Files.createTempDirectory("testout_cg").toFile()
-    val paramOutDir = Files.createTempDirectory("testout_param").toFile()
 
     ProtocBridge.run(
       args => com.github.os72.protocjar.Protoc.runProtoc(args.toArray),
@@ -101,54 +83,32 @@ class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
         TestJvmPlugin -> testOutDirs(0),
         TestJvmPlugin -> testOutDirs(1),
         JvmGenerator("foo", TestJvmPlugin) -> testOutDirs(2),
-        JvmGenerator("foo", TestJvmPlugin) -> testOutDirs(3),
-        JvmGenerator("bar", TestJvmPlugin) -> testOutDirs(4),
-        JvmGenerator("cg", TestCodeGenApp) -> cgOutDir,
-        (JvmGenerator("param", TestParameters), Seq("foo", "bar:value", "baz=qux")) -> paramOutDir
+        (
+          JvmGenerator("foo", TestJvmPlugin),
+          Seq("foo", "bar:value", "baz=qux")
+        ) -> testOutDirs(3),
+        JvmGenerator("bar", TestJvmPlugin) -> testOutDirs(4)
       ),
       Seq(protoFile, "-I", protoDir)
     ) must be(0)
 
-    Files.exists(javaOutDir.toPath.resolve("mytest").resolve("Test.java")) must be(
+    Files.exists(
+      javaOutDir.toPath.resolve("mytest").resolve("Test.java")
+    ) must be(
       true
     )
 
-    def getLines(s: Source): Seq[String] = {
-      val lines = s.getLines.toList // use toList for strict evaluation
-      s.close()
-      lines
-    }
-
-    def fileMustBeLines(file: File, expected: Seq[String]) = {
-      file.exists() must be(true)
-      getLines(Source.fromFile(file)) must be(expected)
-    }
-
     testOutDirs.foreach { testOutDir =>
-      val expected =  Seq(
+      val expected = Seq(
         "test.proto:mytest.TestMsg",
         "test.proto:mytest.AnotherMsg"
       )
-      fileMustBeLines(new File(testOutDir, "msglist.txt"), expected)
+      readLines(new File(testOutDir, "msglist.txt")) must be(expected)
     }
-
-    fileMustBeLines(new File(cgOutDir, "out.out"), Seq("out!"))
-
-    fileMustBeLines(new File(paramOutDir, TestParameters.outputFilename), Seq("foo,bar:value,baz=qux"))
-  }
-
-  it should "fail on plugin profile" in {
-    val protoFile =
-      new File(getClass.getResource("/error.proto").getFile).getAbsolutePath
-    val protoDir = new File(getClass.getResource("/").getFile).getAbsolutePath
-    val cgOutDir = Files.createTempDirectory("testout_cg").toFile()
-    ProtocBridge.run(
-      args => com.github.os72.protocjar.Protoc.runProtoc(args.toArray),
-      Seq(
-        JvmGenerator("cg", TestCodeGenApp) -> cgOutDir
-      ),
-      Seq(protoFile, "-I", protoDir)
-    ) must be(1)
+    readLines(new File(testOutDirs(3), "parameters.txt")) must be(
+      Seq("foo,bar:value,baz=qux")
+    )
+    readLines(new File(testOutDirs(0), "parameters.txt")) must be(Seq("Empty"))
   }
 
   it should "not deadlock for highly concurrent invocations" in {

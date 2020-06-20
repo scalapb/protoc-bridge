@@ -1,19 +1,20 @@
-package protocbridge.codegen
+package protocgen
 
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse
 import scala.collection.JavaConverters._
 
 sealed trait CodeGenResponse {
-  def toCodeGeneratorResponse: CodeGeneratorResponse = this match {
-    case CodeGenResponse.Internal.Success(files) =>
-      val b = CodeGeneratorResponse.newBuilder()
-      b.addAllFile(files.asJava)
-      b.build()
-    case CodeGenResponse.Internal.Failure(msg) =>
-      val b = CodeGeneratorResponse.newBuilder()
-      b.setError(msg)
-      b.build()
-  }
+  def toCodeGeneratorResponse: CodeGeneratorResponse =
+    this match {
+      case CodeGenResponse.Internal.Success(files) =>
+        val b = CodeGeneratorResponse.newBuilder()
+        b.addAllFile(files.asJava)
+        b.build()
+      case CodeGenResponse.Internal.Failure(msg) =>
+        val b = CodeGeneratorResponse.newBuilder()
+        b.setError(msg)
+        b.build()
+    }
 }
 
 object CodeGenResponse {

@@ -29,17 +29,20 @@ class TargetSpec extends AnyFlatSpec with Matchers {
   it should "allow passing options to string generator" in {
     Target(builtin("java", Seq("opt1", "opt2")), TmpPath) must matchPattern {
       case Target(
-          BuiltinGenerator("java", Nil),
-          TmpPath,
-          Seq("opt1", "opt2")
+            BuiltinGenerator("java", Nil),
+            TmpPath,
+            Seq("opt1", "opt2")
           ) =>
     }
 
-    (builtin("java", Seq("opt1", "opt2")) -> TmpPath: Target) must matchPattern {
+    (builtin(
+      "java",
+      Seq("opt1", "opt2")
+    ) -> TmpPath: Target) must matchPattern {
       case Target(
-          BuiltinGenerator("java", Nil),
-          TmpPath,
-          Seq("opt1", "opt2")
+            BuiltinGenerator("java", Nil),
+            TmpPath,
+            Seq("opt1", "opt2")
           ) =>
     }
   }
@@ -47,12 +50,12 @@ class TargetSpec extends AnyFlatSpec with Matchers {
   it should "allow predefined builtin constants" in {
     Target(gens.java, TmpPath) must matchPattern {
       case Target(
-          BuiltinGenerator(
-            "java",
-            List(Artifact("com.google.protobuf", "protobuf-java", _, false))
-          ),
-          TmpPath,
-          Nil
+            BuiltinGenerator(
+              "java",
+              List(Artifact("com.google.protobuf", "protobuf-java", _, false))
+            ),
+            TmpPath,
+            Nil
           ) =>
     }
   }
@@ -60,23 +63,23 @@ class TargetSpec extends AnyFlatSpec with Matchers {
   it should "allow passing options to predefined plugins" in {
     Target(gens.java, TmpPath, Seq("ffx")) must matchPattern {
       case Target(
-          BuiltinGenerator(
-            "java",
-            List(Artifact("com.google.protobuf", "protobuf-java", _, false))
-          ),
-          TmpPath,
-          Seq("ffx")
+            BuiltinGenerator(
+              "java",
+              List(Artifact("com.google.protobuf", "protobuf-java", _, false))
+            ),
+            TmpPath,
+            Seq("ffx")
           ) =>
     }
 
     ((gens.java, Seq("ffx")) -> TmpPath: Target) must matchPattern {
       case Target(
-          BuiltinGenerator(
-            "java",
-            List(Artifact("com.google.protobuf", "protobuf-java", _, false))
-          ),
-          TmpPath,
-          Seq("ffx")
+            BuiltinGenerator(
+              "java",
+              List(Artifact("com.google.protobuf", "protobuf-java", _, false))
+            ),
+            TmpPath,
+            Seq("ffx")
           ) =>
     }
   }

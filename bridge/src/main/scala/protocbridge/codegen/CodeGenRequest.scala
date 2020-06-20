@@ -7,6 +7,10 @@ import com.google.protobuf.compiler.PluginProtos
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorRequest
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto
 
+@deprecated(
+  "Use protocgen.CodeGenRequest from com.thesamet.scalapb:protocgen instead",
+  "0.9.0"
+)
 case class CodeGenRequest(
     parameter: String,
     filesToGenerate: Seq[FileDescriptor],
@@ -14,6 +18,10 @@ case class CodeGenRequest(
     compilerVersion: Option[PluginProtos.Version]
 )
 
+@deprecated(
+  "Use protocgen.CodeGenRequest from com.thesamet.scalapb:protocgen instead",
+  "0.9.0"
+)
 object CodeGenRequest {
   def apply(req: CodeGeneratorRequest) = {
     val filesMap = fileDescriptorsByName(

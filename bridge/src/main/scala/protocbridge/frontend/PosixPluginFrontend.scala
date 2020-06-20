@@ -8,8 +8,8 @@ import java.nio.file.attribute.PosixFilePermission
 import scala.concurrent.blocking
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.collection.JavaConverters._
 import scala.sys.process._
+import java.{util => ju}
 
 /** PluginFrontend for Unix-like systems (Linux, Mac, etc)
   *
@@ -62,9 +62,12 @@ object PosixPluginFrontend extends PluginFrontend {
           |cat /dev/stdin > "$inputPipe"
           |cat "$outputPipe"
       """.stripMargin)
+    val perms = new ju.HashSet[PosixFilePermission]
+    perms.add(PosixFilePermission.OWNER_EXECUTE)
+    perms.add(PosixFilePermission.OWNER_READ)
     Files.setPosixFilePermissions(
       scriptName,
-      Set(PosixFilePermission.OWNER_EXECUTE, PosixFilePermission.OWNER_READ).asJava
+      perms
     )
     scriptName
   }

@@ -64,11 +64,11 @@ object PluginFrontend {
     def addRawVarint32(value0: Int): Unit = {
       var value = value0
       while (true) {
-        if ((value & ~0x7F) == 0) {
+        if ((value & ~0x7f) == 0) {
           b += value.toByte
           return
         } else {
-          b += ((value & 0x7F) | 0x80).toByte
+          b += ((value & 0x7f) | 0x80).toByte
           value >>>= 7
         }
       }

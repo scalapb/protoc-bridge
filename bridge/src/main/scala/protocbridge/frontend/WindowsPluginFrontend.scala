@@ -43,14 +43,16 @@ object WindowsPluginFrontend extends PluginFrontend {
   private def createWindowsScript(port: Int): InternalState = {
     val classPath =
       Paths.get(getClass.getProtectionDomain.getCodeSource.getLocation.toURI)
-    val classPathBatchString = classPath.toString.replaceAllLiterally("%", "%%")
+    val classPathBatchString = classPath.toString.replace("%", "%%")
     val batchFile = PluginFrontend.createTempFile(
       ".bat",
       s"""@echo off
           |"${sys
-           .props("java.home")}\\bin\\java.exe" -cp "$classPathBatchString" ${classOf[
-           BridgeApp
-         ].getName} $port
+        .props(
+          "java.home"
+        )}\\bin\\java.exe" -cp "$classPathBatchString" ${classOf[
+        BridgeApp
+      ].getName} $port
         """.stripMargin
     )
     InternalState(batchFile)

@@ -43,7 +43,9 @@ class ProtocBridgeSpec extends AnyFlatSpec with Matchers {
     run(Seq(Target(Target.builtin("java"), TmpPath))) must be(
       Seq(s"--java_out=$TmpPath")
     )
-    run(Seq(Target(Target.builtin("java", Seq("x", "y", "z")), TmpPath))) must be(
+    run(
+      Seq(Target(Target.builtin("java", Seq("x", "y", "z")), TmpPath))
+    ) must be(
       Seq(s"--java_out=$TmpPath", "--java_opt=x,y,z")
     )
   }
@@ -119,7 +121,8 @@ class ProtocBridgeSpec extends AnyFlatSpec with Matchers {
     }
 
     run(Seq(Target(FoobarGen, TmpPath, Seq("x", "y")))) match {
-      case Seq(DefineFlag(r), UseFlag(s), UseFlagParams(o)) if r == s && r == o =>
+      case Seq(DefineFlag(r), UseFlag(s), UseFlagParams(o))
+          if r == s && r == o =>
     }
   }
 

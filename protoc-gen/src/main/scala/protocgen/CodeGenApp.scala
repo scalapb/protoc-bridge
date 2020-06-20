@@ -1,4 +1,4 @@
-package protocbridge.codegen
+package protocgen
 
 import protocbridge.ProtocCodeGenerator
 import com.google.protobuf.ExtensionRegistry

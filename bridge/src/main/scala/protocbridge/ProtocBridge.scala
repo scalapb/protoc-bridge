@@ -55,7 +55,7 @@ object ProtocBridge {
         t.copy(generator = gen.copy(name = s"${gen.name}_$i"))
       case (t @ Target(gen: SandboxedJvmGenerator, _, _), i) =>
         val codeGen: ProtocCodeGenerator =
-          SandboxedJvmGenerator.load(gen, classLoader(gen.artifact))
+          gen.resolver(classLoader(gen.artifact))
         t.copy(generator =
           JvmGenerator(name = codeGen.name + s"_$i", gen = codeGen)
         )

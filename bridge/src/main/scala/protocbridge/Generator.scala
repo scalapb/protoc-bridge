@@ -41,21 +41,77 @@ final case class JvmGenerator(name: String, gen: ProtocCodeGenerator)
   * risk of conflict.
   *
   * artifact: Artifact containing the generator class.
-  * generatorClass: A scala object that implements ProtocCodeGenerator
+  * resolver: Using a ClassLoader, return a new instance of a ProtocCodeGenerator.
   */
-final case class SandboxedJvmGenerator(
+final case class SandboxedJvmGenerator private (
     name: String,
     artifact: Artifact,
-    generatorClass: String,
-    suggestedDependencies: Seq[Artifact]
-) extends Generator
+    suggestedDependencies: Seq[Artifact],
+    resolver: ClassLoader => ProtocCodeGenerator
+) extends Generator {
+  private[protocbridge] def this(
+      name: String,
+      artifact: Artifact,
+      generatorClass: String,
+      suggestedDependencies: Seq[Artifact]
+  ) =
+    this(
+      name,
+      artifact,
+      suggestedDependencies,
+      SandboxedJvmGenerator.load(generatorClass, _)
+    )
+}
 
 object SandboxedJvmGenerator {
+
+  /** Instantiates a SandboxedJvmGenerator that loads an object named generatorClass */
+  def forModule(
+      name: String,
+      artifact: Artifact,
+      generatorClass: String,
+      suggestedDependencies: Seq[Artifact]
+  ): SandboxedJvmGenerator =
+    SandboxedJvmGenerator(
+      name,
+      artifact,
+      suggestedDependencies,
+      SandboxedJvmGenerator.load(generatorClass, _)
+    )
+
+  /** Instantiates a SandboxedJvmGenerator that uses a class loader to load a generator */
+  def forResolver(
+      name: String,
+      artifact: Artifact,
+      suggestedDependencies: Seq[Artifact],
+      resolver: ClassLoader => ProtocCodeGenerator
+  ): SandboxedJvmGenerator =
+    SandboxedJvmGenerator(
+      name: String,
+      artifact: Artifact,
+      suggestedDependencies: Seq[Artifact],
+      resolver: ClassLoader => ProtocCodeGenerator
+    )
+
+  // kept for binary compatiblity with 0.9.0-RC1
+  private[this] def apply(
+      name: String,
+      artifact: Artifact,
+      generatorClass: String,
+      suggestedDependencies: Seq[Artifact]
+  ): SandboxedJvmGenerator =
+    forModule(
+      name,
+      artifact,
+      generatorClass,
+      suggestedDependencies
+    )
+
   def load(
-      gen: SandboxedJvmGenerator,
+      generatorClass: String,
       loader: ClassLoader
   ): ProtocCodeGenerator = {
-    val cls = loader.loadClass(gen.generatorClass)
+    val cls = loader.loadClass(generatorClass)
     val module = cls.getField("MODULE$").get(null)
     val runMethod = module.getClass().getMethod("run", classOf[Array[Byte]])
     new ProtocCodeGenerator {

@@ -30,6 +30,12 @@ trait CodeGenApp extends ProtocCodeGenerator {
   final override def run(req: Array[Byte]): Array[Byte] =
     run(CodedInputStream.newInstance(req))
 
+  private def errorMessage(t: Throwable) = {
+    val sw = new java.io.StringWriter()
+    t.printStackTrace(new java.io.PrintWriter(sw, true))
+    sw.toString
+  }
+
   final def run(input: CodedInputStream): Array[Byte] = {
     try {
       val registry = ExtensionRegistry.newInstance()
@@ -42,7 +48,7 @@ trait CodeGenApp extends ProtocCodeGenerator {
       case t: Throwable =>
         CodeGeneratorResponse
           .newBuilder()
-          .setError(t.toString)
+          .setError(errorMessage(t))
           .build()
           .toByteArray
     }

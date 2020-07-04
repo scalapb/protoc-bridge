@@ -52,7 +52,9 @@ class TargetSpec extends AnyFlatSpec with Matchers {
       case Target(
             BuiltinGenerator(
               "java",
-              List(Artifact("com.google.protobuf", "protobuf-java", _, false, _, _))
+              List(
+                Artifact("com.google.protobuf", "protobuf-java", _, false, _, _)
+              )
             ),
             TmpPath,
             Nil
@@ -65,7 +67,9 @@ class TargetSpec extends AnyFlatSpec with Matchers {
       case Target(
             BuiltinGenerator(
               "java",
-              List(Artifact("com.google.protobuf", "protobuf-java", _, false, _, _))
+              List(
+                Artifact("com.google.protobuf", "protobuf-java", _, false, _, _)
+              )
             ),
             TmpPath,
             Seq("ffx")
@@ -76,7 +80,9 @@ class TargetSpec extends AnyFlatSpec with Matchers {
       case Target(
             BuiltinGenerator(
               "java",
-              List(Artifact("com.google.protobuf", "protobuf-java", _, false, _, _))
+              List(
+                Artifact("com.google.protobuf", "protobuf-java", _, false, _, _)
+              )
             ),
             TmpPath,
             Seq("ffx")

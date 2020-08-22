@@ -44,8 +44,8 @@ lazy val bridge = project
     libraryDependencies ++= Seq(
       protobufJava % "3.7.1" % "provided",
       protobufJava % "3.7.1" % "test",
-      "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % "test",
-      "org.scalatest" %% "scalatest" % "3.2.1" % "test",
+      "org.scalatestplus" %% "scalacheck-1-14" % "3.2.1.0" % "test",
+      "org.scalatest" %% "scalatest" % "3.2.2" % "test",
       "org.scalacheck" %% "scalacheck" % "1.14.3" % "test",
       "com.github.os72" % "protoc-jar" % "3.11.4" % "test",
       "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.6" % "test"

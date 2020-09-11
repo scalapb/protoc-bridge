@@ -48,7 +48,7 @@ lazy val bridge = project
       "org.scalatest" %% "scalatest" % "3.2.2" % "test",
       "org.scalacheck" %% "scalacheck" % "1.14.3" % "test",
       "com.github.os72" % "protoc-jar" % "3.11.4" % "test",
-      "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.6" % "test"
+      "org.scala-lang.modules" %% "scala-collection-compat" % "2.2.0" % "test"
     )
   )
 

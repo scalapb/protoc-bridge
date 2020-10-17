@@ -9,6 +9,7 @@ import java.nio.file.Files
 import protocbridge.JvmGenerator
 import protocbridge.TestUtils.readLines
 import scala.annotation.nowarn
+import protocbridge.RunProtoc
 
 @nowarn("msg=(trait|class|object) CodeGen.*is deprecated")
 object TestCodeGenApp extends CodeGenApp {
@@ -35,7 +36,7 @@ class CodeGenAppSpec extends AnyFlatSpec with Matchers {
     val protoDir = new File(getClass.getResource("/").getFile).getAbsolutePath
     val cgOutDir = Files.createTempDirectory("testout_cg").toFile()
     ProtocBridge.run(
-      args => com.github.os72.protocjar.Protoc.runProtoc(args.toArray),
+      RunProtoc.run,
       Seq(
         JvmGenerator("cg", TestCodeGenApp) -> cgOutDir
       ),
@@ -50,7 +51,7 @@ class CodeGenAppSpec extends AnyFlatSpec with Matchers {
     val protoDir = new File(getClass.getResource("/").getFile).getAbsolutePath
     val cgOutDir = Files.createTempDirectory("testout_cg").toFile()
     ProtocBridge.run(
-      args => com.github.os72.protocjar.Protoc.runProtoc(args.toArray),
+      RunProtoc.run,
       Seq(
         JvmGenerator("cg", TestCodeGenApp) -> cgOutDir
       ),

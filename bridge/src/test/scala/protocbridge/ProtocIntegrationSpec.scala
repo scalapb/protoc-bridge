@@ -11,7 +11,7 @@ import com.google.protobuf.compiler.PluginProtos.{
 }
 
 import scala.concurrent.duration.{Duration, SECONDS}
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future, blocking}
 import scala.io.Source
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
@@ -76,7 +76,7 @@ class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
       (0 to 4).map(i => Files.createTempDirectory(s"testout$i").toFile())
 
     ProtocBridge.run(
-      args => com.github.os72.protocjar.Protoc.runProtoc(args.toArray),
+      args => RunProtoc.run(args),
       Seq(
         protocbridge.gens.java("3.8.0") -> javaOutDir,
         TestJvmPlugin -> testOutDirs(0),
@@ -130,15 +130,17 @@ class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
 
     val invocations = List.fill(parallelProtocInvocations) {
       Future(
-        ProtocBridge.run(
-          args => com.github.os72.protocjar.Protoc.runProtoc(args.toArray),
-          List.fill(generatorsByInvocation)(
-            Target(
-              JvmGenerator("foo", TestJvmPlugin),
-              Files.createTempDirectory(s"foo").toFile
-            )
-          ),
-          Seq(protoFile, "-I", protoDir)
+        blocking(
+          ProtocBridge.run(
+            RunProtoc.run,
+            List.fill(generatorsByInvocation)(
+              Target(
+                JvmGenerator("foo", TestJvmPlugin),
+                Files.createTempDirectory(s"foo").toFile
+              )
+            ),
+            Seq(protoFile, "-I", protoDir)
+          )
         )
       )
     }

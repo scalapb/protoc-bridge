@@ -1,0 +1,1 @@
+../../../../../protoc-cache-coursier/src/main/scala/protocbridge/ProtocCacheCoursier.scala

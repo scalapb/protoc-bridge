@@ -10,24 +10,37 @@ inThisBuild(
 
 val protobufJava = "com.google.protobuf" % "protobuf-java"
 
-lazy val bridge = project
+val coursierVersion = "2.0.2"
+
+lazy val bridge: Project = project
   .in(file("bridge"))
   .settings(
     name := "protoc-bridge",
-    mimaPreviousArtifacts := Set(
-      organization.value %% name.value % "0.9.0-RC1"
-    ),
     scalacOptions ++= (if (scalaVersion.value.startsWith("2.13."))
                          Seq("-deprecation", "-Xfatal-warnings")
                        else Nil),
     libraryDependencies ++= Seq(
+      "dev.dirs" % "directories" % "21",
       protobufJava % "3.7.1" % "provided",
       protobufJava % "3.7.1" % "test",
       "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % "test",
       "org.scalatest" %% "scalatest" % "3.2.2" % "test",
       "org.scalacheck" %% "scalacheck" % "1.14.3" % "test",
-      "com.github.os72" % "protoc-jar" % "3.11.4" % "test",
-      "org.scala-lang.modules" %% "scala-collection-compat" % "2.2.0" % "test"
+      "org.scala-lang.modules" %% "scala-collection-compat" % "2.2.0" % "test",
+      "io.get-coursier" %% "coursier" % coursierVersion % "test"
+    ),
+    mimaPreviousArtifacts := Set(
+      organization.value %% name.value % "0.9.0-RC2"
+    )
+  )
+
+lazy val protocCacheCoursier = project
+  .in(file("protoc-cache-coursier"))
+  .dependsOn(bridge)
+  .settings(
+    name := "protoc-cache-coursier",
+    libraryDependencies ++= Seq(
+      "io.get-coursier" %% "coursier" % coursierVersion
     )
   )
 
@@ -38,6 +51,9 @@ lazy val protocGen = project
     name := "protoc-gen",
     libraryDependencies ++= Seq(
       protobufJava % "3.12.2" % "provided"
+    ),
+    mimaPreviousArtifacts := Set(
+      organization.value %% name.value % "0.9.0-RC3"
     ),
     Test / unmanagedResourceDirectories ++= (bridge / Test / unmanagedResourceDirectories).value
   )
@@ -51,5 +67,6 @@ lazy val root = project
   )
   .aggregate(
     bridge,
-    protocGen
+    protocGen,
+    protocCacheCoursier
   )

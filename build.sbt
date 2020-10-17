@@ -42,6 +42,7 @@ lazy val bridge = project
                          Seq("-deprecation", "-Xfatal-warnings")
                        else Nil),
     libraryDependencies ++= Seq(
+      "dev.dirs" % "directories" % "21",
       protobufJava % "3.7.1" % "provided",
       protobufJava % "3.7.1" % "test",
       "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % "test",

@@ -41,7 +41,7 @@ object CoursierProtocCache {
 
   private[this] def filenameFromKey(dep: Dependency) = {
     val ext =
-      if (dep.publication.classifier.value.startsWith("win")) ".ext" else ""
+      if (dep.publication.classifier.value.startsWith("win")) ".exe" else ""
     s"${dep.publication.name}-${dep.publication.classifier.value}-${dep.version}$ext"
   }
 

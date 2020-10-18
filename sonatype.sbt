@@ -1,4 +1,4 @@
-sonatypeProfileName := "com.thesamet"
+sonatypeProfileName := "com.thesamet.scalapb"
 
 pomExtra in Global := {
   <url>https://github.com/scalapb/protoc-bridge</url>

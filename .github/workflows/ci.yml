@@ -1,0 +1,32 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os: ["ubuntu-20.04", "macos-latest", "windows-latest"]
+
+    steps:
+    - uses: actions/checkout@v1
+    - uses: olafurpg/setup-scala@v5
+      with:
+        java-version: 11
+    - name: Mount caches
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.sbt
+          ~/.ivy2/cache
+          ~/.cache/coursier
+        key: ${{ runner.os }}-sbt-${{ hashFiles('**/*.sbt') }}
+    - name: Compile and test
+      run: |
+       sbt test
+      shell: bash
+    - name: Format check
+      if: ${{ runner.os == 'Linux' }}
+      run: |
+        sbt scalafmtCheck test:scalafmtCheck scalafmtSbtCheck

@@ -1,4 +1,3 @@
-import ReleaseTransformations._
 
 inThisBuild(
   List(
@@ -6,27 +5,8 @@ inThisBuild(
     crossScalaVersions := Seq("2.12.10", "2.13.2"),
     scalacOptions ++= List("-target:jvm-1.8"),
     javacOptions ++= List("-target", "8", "-source", "8"),
-    organization := "com.thesamet.scalapb"
+    organization := "com.thesamet.scalapb",
   )
-)
-
-releaseCrossBuild := true
-
-releasePublishArtifactsAction := PgpKeys.publishSigned.value
-
-releaseProcess := Seq[ReleaseStep](
-  checkSnapshotDependencies,
-  inquireVersions,
-  runClean,
-  runTest,
-  setReleaseVersion,
-  commitReleaseVersion,
-  tagRelease,
-  releaseStepCommandAndRemaining("+publishSigned"),
-  releaseStepCommand("sonatypeBundleRelease"),
-  setNextVersion,
-  commitNextVersion,
-  pushChanges
 )
 
 val protobufJava = "com.google.protobuf" % "protobuf-java"

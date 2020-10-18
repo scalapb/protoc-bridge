@@ -50,11 +50,10 @@ object PluginFrontend {
   ): Array[Byte] = {
     Try {
       gen.run(request)
-    }.recover {
-      case throwable =>
-        createCodeGeneratorResponseWithError(
-          throwable.toString + "\n" + getStackTrace(throwable)
-        )
+    }.recover { case throwable =>
+      createCodeGeneratorResponseWithError(
+        throwable.toString + "\n" + getStackTrace(throwable)
+      )
     }.get
   }
 

@@ -57,11 +57,14 @@ object PosixPluginFrontend extends PluginFrontend {
   }
 
   private def createShellScript(inputPipe: Path, outputPipe: Path): Path = {
-    val scriptName = PluginFrontend.createTempFile("", s"""|#!/usr/bin/env sh
+    val scriptName = PluginFrontend.createTempFile(
+      "",
+      s"""|#!/usr/bin/env sh
           |set -e
           |cat /dev/stdin > "$inputPipe"
           |cat "$outputPipe"
-      """.stripMargin)
+      """.stripMargin
+    )
     val perms = new ju.HashSet[PosixFilePermission]
     perms.add(PosixFilePermission.OWNER_EXECUTE)
     perms.add(PosixFilePermission.OWNER_READ)

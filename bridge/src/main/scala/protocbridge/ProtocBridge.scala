@@ -63,9 +63,8 @@ object ProtocBridge {
     }
 
     val namedGenerators: Seq[(String, ProtocCodeGenerator)] =
-      targetsSuffixed.collect {
-        case Target(gen: JvmGenerator, _, _) =>
-          (gen.name, gen.gen)
+      targetsSuffixed.collect { case Target(gen: JvmGenerator, _, _) =>
+        (gen.name, gen.gen)
       }
 
     val cmdLine: Seq[String] = pluginArgs(targets) ++ targetsSuffixed.flatMap {
@@ -99,8 +98,8 @@ object ProtocBridge {
       )
     }
 
-    pluginsAndPaths.map {
-      case (name, path) => s"--plugin=protoc-gen-$name=$path"
+    pluginsAndPaths.map { case (name, path) =>
+      s"--plugin=protoc-gen-$name=$path"
     }
   }
 
@@ -113,8 +112,8 @@ object ProtocBridge {
 
     val generatorScriptState
         : Seq[(String, (Path, pluginFrontend.InternalState))] =
-      namedGenerators.map {
-        case (name, plugin) => (name, pluginFrontend.prepare(plugin))
+      namedGenerators.map { case (name, plugin) =>
+        (name, pluginFrontend.prepare(plugin))
       }
 
     val cmdLine: Seq[String] = generatorScriptState.map {
@@ -125,8 +124,8 @@ object ProtocBridge {
     try {
       protoc(cmdLine)
     } finally {
-      generatorScriptState.foreach {
-        case (_, (_, state)) => pluginFrontend.cleanup(state)
+      generatorScriptState.foreach { case (_, (_, state)) =>
+        pluginFrontend.cleanup(state)
       }
     }
   }

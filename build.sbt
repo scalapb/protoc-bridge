@@ -37,7 +37,9 @@ lazy val bridge = project
   .in(file("bridge"))
   .settings(
     name := "protoc-bridge",
-    mimaPreviousArtifacts := Set(organization.value %% name.value % "0.9.0-RC1"),
+    mimaPreviousArtifacts := Set(
+      organization.value %% name.value % "0.9.0-RC1"
+    ),
     scalacOptions ++= (if (scalaVersion.value.startsWith("2.13."))
                          Seq("-deprecation", "-Xfatal-warnings")
                        else Nil),

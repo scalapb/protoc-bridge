@@ -10,8 +10,6 @@ inThisBuild(
   )
 )
 
-publishTo in ThisBuild := sonatypePublishToBundle.value
-
 releaseCrossBuild := true
 
 releasePublishArtifactsAction := PgpKeys.publishSigned.value

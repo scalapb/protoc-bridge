@@ -1,3 +1,5 @@
+sonatypeProfileName := "com.thesamet"
+
 pomExtra in Global := {
   <url>https://github.com/scalapb/protoc-bridge</url>
   <licenses>

@@ -28,7 +28,7 @@ object CoursierProtocCache {
       .getAbsolutePath()) ++ args).!
   }
 
-  private[this] def download(dep: Dependency): Future[File] = {
+  private[this] def download(tmpDir: File, dep: Dependency): Future[File] = {
     Fetch()
       .addDependencies(dep)
       .future()

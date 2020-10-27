@@ -7,12 +7,12 @@ import scala.concurrent.Promise
 import java.io.File
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Try
-import java.nio.file.Files
+import java.nio.file.{Files, Path}
 
 /** Cache for files that performs a single concurrent get per key upon miss. */
 final class FileCache[K](
     cacheDir: File,
-    doGet: K => Future[File],
+    doGet: (File, K) => Future[File],
     keyAsFileName: K => String
 ) {
   private[protocbridge] val tasks = new ConcurrentHashMap[K, Promise[File]]
@@ -28,10 +28,13 @@ final class FileCache[K](
       val prev = tasks.putIfAbsent(key, p)
       if (prev == null) {
         // we are the first
-        doGet(key).map(copyToCache(_, f)).onComplete { (res: Try[File]) =>
-          if (res.isFailure) { tasks.remove(key) }
-          else { completeMarker(key).createNewFile() }
-          p.complete(res)
+        val tmpDir = Files.createTempDirectory("protocbridge").toFile
+        doGet(tmpDir, key).map(copyToCache(_, f)).onComplete {
+          (res: Try[File]) =>
+            FileCache.delete(tmpDir)
+            if (res.isFailure) { tasks.remove(key) }
+            else { completeMarker(key).createNewFile() }
+            p.complete(res)
         }
         p.future
       } else {
@@ -72,5 +75,10 @@ object FileCache {
       }
     dir.mkdirs()
     dir
+  }
+
+  private[protocbridge] def delete(dir: File): Unit = {
+    Option(dir.listFiles).foreach(_.foreach(delete))
+    dir.delete()
   }
 }

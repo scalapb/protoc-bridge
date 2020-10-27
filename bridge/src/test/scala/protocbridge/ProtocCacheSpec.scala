@@ -16,20 +16,20 @@ class ProtocCacheSpec
     extends AnyFlatSpec
     with Matchers
     with OneInstancePerTest {
-  val tmpDir = Files.createTempDirectory("protocache").toFile()
+  val cacheDir = Files.createTempDirectory("protocache").toFile()
   val cache =
-    new protocbridge.FileCache[String](tmpDir, downloadFile, v => v + ".exe")
+    new protocbridge.FileCache[String](cacheDir, downloadFile, v => v + ".exe")
   val callCount = new AtomicInteger(0)
   val p = Promise[Unit]() // used to unsuspend the downloader
 
   val existing = {
-    new File(tmpDir, "existing.exe.complete").createNewFile()
-    val f = new File(tmpDir, "existing.exe")
+    new File(cacheDir, "existing.exe.complete").createNewFile()
+    val f = new File(cacheDir, "existing.exe")
     f.createNewFile()
     f
   }
 
-  def downloadFile(v: String): Future[File] = {
+  def downloadFile(tmpDir: File, v: String): Future[File] = {
     callCount.incrementAndGet()
     p.future.map { _ =>
       if (v == "error") throw new RuntimeException("error!")
@@ -60,10 +60,10 @@ class ProtocCacheSpec
     p.success(())
     val res = Await.result(Future.sequence(fs), Duration.Inf)
     callCount.get must be(3)
-    new File(tmpDir, "somever0.exe").canExecute() must be(true)
-    new File(tmpDir, "somever1.exe").canExecute() must be(true)
-    new File(tmpDir, "somever2.exe").canExecute() must be(true)
-    new File(tmpDir, "somever3.exe").canExecute() must be(false)
+    new File(cacheDir, "somever0.exe").canExecute() must be(true)
+    new File(cacheDir, "somever1.exe").canExecute() must be(true)
+    new File(cacheDir, "somever2.exe").canExecute() must be(true)
+    new File(cacheDir, "somever3.exe").canExecute() must be(false)
     Await.result(cache.get("somever1"), Duration.Inf).canExecute() must be(true)
     callCount.get must be(3)
     Await.result(cache.get("somever3"), Duration.Inf).canExecute() must be(true)

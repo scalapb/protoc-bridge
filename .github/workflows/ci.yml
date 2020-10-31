@@ -30,3 +30,8 @@ jobs:
       if: ${{ runner.os == 'Linux' }}
       run: |
         sbt scalafmtCheck test:scalafmtCheck scalafmtSbtCheck
+  ci-passed:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - run: ':'

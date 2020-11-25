@@ -26,7 +26,7 @@ lazy val bridge: Project = project
       "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % "test",
       "org.scalatest" %% "scalatest" % "3.2.3" % "test",
       "org.scalacheck" %% "scalacheck" % "1.15.1" % "test",
-      "org.scala-lang.modules" %% "scala-collection-compat" % "2.3.0" % "test",
+      "org.scala-lang.modules" %% "scala-collection-compat" % "2.3.1" % "test",
       "io.get-coursier" %% "coursier" % coursierVersion % "test"
     ),
     mimaPreviousArtifacts := Set(

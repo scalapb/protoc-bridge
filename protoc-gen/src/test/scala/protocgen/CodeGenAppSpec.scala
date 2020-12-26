@@ -9,9 +9,13 @@ import java.nio.file.Files
 import protocbridge.JvmGenerator
 import protocbridge.TestUtils.readLines
 import protocbridge.RunProtoc
+import protocbridge.ExtraEnv
 
 object TestCodeGenApp extends CodeGenApp {
   def process(request: CodeGenRequest): CodeGenResponse = {
+    val env = ExtraEnv.fromCodeGeneratorRequest(request.asProto)
+    assert(new File(env.secondaryOutputDir).isDirectory())
+
     if (request.filesToGenerate.exists(_.getName().contains("error")))
       CodeGenResponse.fail("Error!")
     else
@@ -21,6 +25,11 @@ object TestCodeGenApp extends CodeGenApp {
             .newBuilder()
             .setName("out.out")
             .setContent("out!")
+            .build(),
+          CodeGeneratorResponse.File
+            .newBuilder()
+            .setName("env")
+            .setContent(env.secondaryOutputDir.nonEmpty.toString())
             .build()
         )
       )
@@ -41,6 +50,7 @@ class CodeGenAppSpec extends AnyFlatSpec with Matchers {
       Seq(protoFile, "-I", protoDir)
     ) must be(0)
     readLines(new File(cgOutDir, "out.out")) must be(Seq("out!"))
+    readLines(new File(cgOutDir, "env")) must be(Seq("true"))
   }
 
   "protocgen.TestCodeGenApp" should "fail on error.proto" in {

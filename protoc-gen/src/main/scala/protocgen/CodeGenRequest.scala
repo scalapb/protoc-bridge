@@ -11,7 +11,8 @@ case class CodeGenRequest(
     parameter: String,
     filesToGenerate: Seq[FileDescriptor],
     allProtos: Seq[FileDescriptor],
-    compilerVersion: Option[PluginProtos.Version]
+    compilerVersion: Option[PluginProtos.Version],
+    asProto: CodeGeneratorRequest
 )
 
 object CodeGenRequest {
@@ -25,7 +26,8 @@ object CodeGenRequest {
         req.getFileToGenerateList().asScala.toVector.map(filesMap),
       allProtos = filesMap.values.toVector,
       compilerVersion =
-        if (req.hasCompilerVersion()) Some(req.getCompilerVersion()) else None
+        if (req.hasCompilerVersion()) Some(req.getCompilerVersion()) else None,
+      req
     )
   }
 

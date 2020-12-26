@@ -76,7 +76,7 @@ class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
       (0 to 4).map(i => Files.createTempDirectory(s"testout$i").toFile())
 
     ProtocBridge.run(
-      args => RunProtoc.run(args),
+      RunProtoc,
       Seq(
         protocbridge.gens.java("3.8.0") -> javaOutDir,
         TestJvmPlugin -> testOutDirs(0),
@@ -132,7 +132,7 @@ class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
       Future(
         blocking(
           ProtocBridge.run(
-            RunProtoc.run,
+            RunProtoc,
             List.fill(generatorsByInvocation)(
               Target(
                 JvmGenerator("foo", TestJvmPlugin),

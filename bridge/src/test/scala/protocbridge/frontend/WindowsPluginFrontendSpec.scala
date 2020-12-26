@@ -2,7 +2,7 @@ package protocbridge.frontend
 
 import java.io.ByteArrayInputStream
 
-import protocbridge.ProtocCodeGenerator
+import protocbridge.{ProtocCodeGenerator, ExtraEnv}
 
 import scala.sys.process.ProcessLogger
 import org.scalatest.flatspec.AnyFlatSpec
@@ -20,7 +20,10 @@ class WindowsPluginFrontendSpec extends AnyFlatSpec with Matchers {
           toReceive.getBytes
         }
       }
-      val (path, state) = WindowsPluginFrontend.prepare(fakeGenerator)
+      val (path, state) = WindowsPluginFrontend.prepare(
+        fakeGenerator,
+        new ExtraEnv(secondaryOutputDir = "tmp")
+      )
       val actualOutput = scala.collection.mutable.Buffer.empty[String]
       val process = sys.process
         .Process(path.toAbsolutePath.toString)

@@ -18,7 +18,8 @@ class ProtocBridgeSpec extends AnyFlatSpec with Matchers {
     // the system path of the executable and an arbitary internal state object that is passed
     // later. Useful for cleanup.
     def prepare(
-        plugin: ProtocCodeGenerator
+        plugin: ProtocCodeGenerator,
+        env: ExtraEnv
     ): (java.nio.file.Path, InternalState) = (null, ())
 
     def cleanup(state: InternalState): Unit = {}
@@ -32,7 +33,7 @@ class ProtocBridgeSpec extends AnyFlatSpec with Matchers {
     (JvmGenerator("fff", FoobarGen), Seq(opt1, opt2))
 
   def run(targets: Seq[Target], params: Seq[String] = Seq.empty) =
-    ProtocBridge.run(args => args, targets, params, TestFrontend)
+    ProtocBridge.run(ProtocRunner(args => args), targets, params, TestFrontend)
 
   "run" should "pass params when there are no targets" in {
     run(Seq.empty, Seq.empty) must be(Seq.empty)

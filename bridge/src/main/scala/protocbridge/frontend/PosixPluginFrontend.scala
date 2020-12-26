@@ -3,6 +3,7 @@ package protocbridge.frontend
 import java.nio.file.{Files, Path}
 
 import protocbridge.ProtocCodeGenerator
+import protocbridge.ExtraEnv
 import java.nio.file.attribute.PosixFilePermission
 
 import scala.concurrent.blocking
@@ -23,7 +24,10 @@ object PosixPluginFrontend extends PluginFrontend {
       shellScript: Path
   )
 
-  override def prepare(plugin: ProtocCodeGenerator): (Path, InternalState) = {
+  override def prepare(
+      plugin: ProtocCodeGenerator,
+      env: ExtraEnv
+  ): (Path, InternalState) = {
     val tempDirPath = Files.createTempDirectory("protopipe-")
     val inputPipe = createPipe(tempDirPath, "input")
     val outputPipe = createPipe(tempDirPath, "output")
@@ -32,7 +36,7 @@ object PosixPluginFrontend extends PluginFrontend {
     Future {
       blocking {
         val fsin = Files.newInputStream(inputPipe)
-        val response = PluginFrontend.runWithInputStream(plugin, fsin)
+        val response = PluginFrontend.runWithInputStream(plugin, fsin, env)
         fsin.close()
 
         val fsout = Files.newOutputStream(outputPipe)

@@ -3,7 +3,7 @@ package protocbridge.frontend
 import java.io.{ByteArrayOutputStream, InputStream, PrintWriter, StringWriter}
 import java.nio.file.{Files, Path}
 
-import protocbridge.ProtocCodeGenerator
+import protocbridge.{ProtocCodeGenerator, ExtraEnv}
 
 import scala.util.Try
 
@@ -31,7 +31,7 @@ trait PluginFrontend {
   // Notifies the frontend to set up a protoc plugin that runs the given generator. It returns
   // the system path of the executable and an arbitary internal state object that is passed
   // later. Useful for cleanup.
-  def prepare(plugin: ProtocCodeGenerator): (Path, InternalState)
+  def prepare(plugin: ProtocCodeGenerator, env: ExtraEnv): (Path, InternalState)
 
   def cleanup(state: InternalState): Unit
 }
@@ -81,6 +81,7 @@ object PluginFrontend {
     b.result()
   }
 
+  @deprecated("This method is going to be removed.", "0.9.0")
   def readInputStreamToByteArray(fsin: InputStream): Array[Byte] = {
     val b = new ByteArrayOutputStream()
     val buffer = new Array[Byte](4096)
@@ -94,11 +95,29 @@ object PluginFrontend {
     b.toByteArray
   }
 
+  private def readInputStreamToByteArrayWithEnv(
+      fsin: InputStream,
+      env: ExtraEnv
+  ): Array[Byte] = {
+    val b = new ByteArrayOutputStream()
+    val buffer = new Array[Byte](4096)
+    var count = 0
+    while (count != -1) {
+      count = fsin.read(buffer)
+      if (count > 0) {
+        b.write(buffer, 0, count)
+      }
+    }
+    b.writeBytes(env.toByteArrayAsField)
+    b.toByteArray
+  }
+
   def runWithInputStream(
       gen: ProtocCodeGenerator,
-      fsin: InputStream
+      fsin: InputStream,
+      env: ExtraEnv
   ): Array[Byte] = {
-    val bytes = readInputStreamToByteArray(fsin)
+    val bytes = readInputStreamToByteArrayWithEnv(fsin, env)
     runWithBytes(gen, bytes)
   }
 

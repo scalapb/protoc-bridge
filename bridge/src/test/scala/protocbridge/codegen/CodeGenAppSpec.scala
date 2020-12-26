@@ -36,7 +36,7 @@ class CodeGenAppSpec extends AnyFlatSpec with Matchers {
     val protoDir = new File(getClass.getResource("/").getFile).getAbsolutePath
     val cgOutDir = Files.createTempDirectory("testout_cg").toFile()
     ProtocBridge.run(
-      RunProtoc.run,
+      RunProtoc,
       Seq(
         JvmGenerator("cg", TestCodeGenApp) -> cgOutDir
       ),
@@ -51,7 +51,7 @@ class CodeGenAppSpec extends AnyFlatSpec with Matchers {
     val protoDir = new File(getClass.getResource("/").getFile).getAbsolutePath
     val cgOutDir = Files.createTempDirectory("testout_cg").toFile()
     ProtocBridge.run(
-      RunProtoc.run,
+      RunProtoc,
       Seq(
         JvmGenerator("cg", TestCodeGenApp) -> cgOutDir
       ),

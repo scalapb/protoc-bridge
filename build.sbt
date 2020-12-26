@@ -1,3 +1,5 @@
+import com.typesafe.tools.mima.core._
+
 inThisBuild(
   List(
     scalaVersion := "2.12.12",
@@ -29,8 +31,23 @@ lazy val bridge: Project = project
       "org.scala-lang.modules" %% "scala-collection-compat" % "2.3.2" % "test",
       "io.get-coursier" %% "coursier" % coursierVersion % "test"
     ),
+    scalacOptions ++= (if (scalaVersion.value.startsWith("2.13."))
+                         Seq("-Wconf:origin=.*JavaConverters.*:s")
+                       else Nil),
     mimaPreviousArtifacts := Set(
       organization.value %% name.value % "0.9.0-RC2"
+    ),
+    mimaBinaryIssueFilters ++= Seq(
+      ProblemFilters
+        .exclude[IncompatibleMethTypeProblem]("protocbridge.ProtocBridge.run"),
+      ProblemFilters
+        .exclude[DirectMissingMethodProblem]("protocbridge.frontend.*"),
+      ProblemFilters.exclude[ReversedMissingMethodProblem](
+        "protocbridge.frontend.PluginFrontend.prepare"
+      ),
+      ProblemFilters.exclude[DirectMissingMethodProblem](
+        "protocbridge.ProtocBridge.runWithGenerators$default$4"
+      )
     )
   )
 
@@ -54,6 +71,9 @@ lazy val protocGen = project
     ),
     mimaPreviousArtifacts := Set(
       organization.value %% name.value % "0.9.0-RC3"
+    ),
+    mimaBinaryIssueFilters ++= Seq(
+      ProblemFilters.exclude[Problem]("protocgen.CodeGenRequest.*")
     ),
     Test / unmanagedResourceDirectories ++= (bridge / Test / unmanagedResourceDirectories).value
   )

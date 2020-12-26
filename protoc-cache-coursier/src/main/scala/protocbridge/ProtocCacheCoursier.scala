@@ -16,7 +16,11 @@ object CoursierProtocCache {
   def getProtoc(version: String): File =
     Await.result(cache.get(protocDep(version)), Duration.Inf)
 
-  def runProtoc(version: String, args: Seq[String]): Int = {
+  def runProtoc(
+      version: String,
+      args: Seq[String],
+      extraEnv: Seq[(String, String)]
+  ): Int = {
     import sys.process._
 
     val maybeNixDynamicLinker: Option[String] =
@@ -24,8 +28,9 @@ object CoursierProtocCache {
         Source.fromFile(nixCC + "/nix-support/dynamic-linker").mkString.trim()
       }
 
-    ((maybeNixDynamicLinker.toSeq :+ getProtoc(version)
-      .getAbsolutePath()) ++ args).!
+    val cmd = (maybeNixDynamicLinker.toSeq :+ getProtoc(version)
+      .getAbsolutePath()) ++ args
+    Process(command = cmd, cwd = None, extraEnv: _*).!
   }
 
   private[this] def download(tmpDir: File, dep: Dependency): Future[File] = {
@@ -54,4 +59,8 @@ object CoursierProtocCache {
         Extension("exe"),
         Classifier(SystemDetector.detectedClassifier())
       )
+
+  // For backwards binary compatibility
+  private def runProtoc(version: String, args: Seq[String]): Int =
+    runProtoc(version, args, Seq.empty)
 }

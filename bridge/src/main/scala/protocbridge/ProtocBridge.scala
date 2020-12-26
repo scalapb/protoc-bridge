@@ -6,32 +6,12 @@ import java.nio.file.Path
 import protocbridge.frontend.PluginFrontend
 
 import scala.language.implicitConversions
+import java.nio.file.Paths
+import java.nio.file.Files
 
 object ProtocBridge {
-  def run[A](
-      protoc: Seq[String] => A,
-      targets: Seq[Target],
-      params: Seq[String]
-  ): A = run(protoc, targets, params, PluginFrontend.newInstance)
 
-  def run[A](
-      protoc: Seq[String] => A,
-      targets: Seq[Target],
-      params: Seq[String],
-      pluginFrontend: PluginFrontend
-  ): A =
-    run(
-      protoc,
-      targets,
-      params,
-      pluginFrontend,
-      artifact =>
-        throw new RuntimeException(
-          s"The version of sbt-protoc you are using is incompatible with '${artifact}' code generator. Please update sbt-protoc to a version >= 0.99.33"
-        )
-    )
-
-  /** * Runs protoc with a given set of targets.
+  /** Runs protoc with a given set of targets.
     *
     * @param protoc a function that runs protoc with the given command line arguments.
     * @param targets a sequence of generators to invokes
@@ -41,20 +21,20 @@ object ProtocBridge {
     * @tparam A
     * @return the return value from the protoc function.
     */
-  def run[A](
-      protoc: Seq[String] => A,
+  def run[ExitCode](
+      protoc: ProtocRunner[ExitCode],
       targets: Seq[Target],
       params: Seq[String],
       pluginFrontend: PluginFrontend,
       classLoader: Artifact => ClassLoader
-  ): A = {
+  ): ExitCode = {
 
     // The same JvmGenerator might be passed several times, but requires separate frontends
     val targetsSuffixed = targets.zipWithIndex.map {
       case (t @ Target(gen: JvmGenerator, _, _), i) =>
         t.copy(generator = gen.copy(name = s"${gen.name}_$i"))
       case (t @ Target(gen: SandboxedJvmGenerator, _, _), i) =>
-        val codeGen: ProtocCodeGenerator =
+        val codeGen =
           gen.resolver(classLoader(gen.artifact))
         t.copy(generator =
           JvmGenerator(name = codeGen.name + s"_$i", gen = codeGen)
@@ -80,6 +60,36 @@ object ProtocBridge {
     runWithGenerators(protoc, namedGenerators, cmdLine, pluginFrontend)
   }
 
+  // For testing.
+  def run[ExitCode](
+      protoc: ProtocRunner[ExitCode],
+      targets: Seq[Target],
+      params: Seq[String],
+      pluginFrontend: PluginFrontend
+  ): ExitCode = run[ExitCode](
+    protoc,
+    targets,
+    params,
+    pluginFrontend,
+    (art: Artifact) =>
+      throw new RuntimeException(
+        s"Unale to load sandboxed plugin for ${art} since ClassLoader was not provided. If " +
+          "using sbt-protoc, please update to version 1.0.0-RC5 or later."
+      )
+  )
+
+  // For testing.
+  def run[ExitCode](
+      protoc: ProtocRunner[ExitCode],
+      targets: Seq[Target],
+      params: Seq[String]
+  ): ExitCode = run[ExitCode](
+    protoc,
+    targets,
+    params,
+    PluginFrontend.newInstance
+  )
+
   private def pluginArgs(targets: Seq[Target]): Seq[String] = {
     val pluginsAndPaths: Seq[(String, String)] = targets.collect {
       case Target(PluginGenerator(pluginName, _, Some(pluginPath)), _, _) =>
@@ -103,17 +113,36 @@ object ProtocBridge {
     }
   }
 
-  def runWithGenerators[A](
-      protoc: Seq[String] => A,
+  def runWithGenerators[ExitCode](
+      protoc: ProtocRunner[ExitCode],
+      namedGenerators: Seq[(String, ProtocCodeGenerator)],
+      params: Seq[String]
+  ): ExitCode = runWithGenerators(
+    protoc,
+    namedGenerators,
+    params,
+    PluginFrontend.newInstance
+  )
+
+  def runWithGenerators[ExitCode](
+      protoc: ProtocRunner[ExitCode],
       namedGenerators: Seq[(String, ProtocCodeGenerator)],
       params: Seq[String],
-      pluginFrontend: PluginFrontend = PluginFrontend.newInstance
-  ): A = {
+      pluginFrontend: PluginFrontend
+  ): ExitCode = {
+
+    import collection.JavaConverters._
+    val secondaryOutputDir = Files
+      .createTempDirectory("protocbridge-secondary")
+      .toAbsolutePath()
+    val extraEnv = new ExtraEnv(
+      secondaryOutputDir = secondaryOutputDir.toString()
+    )
 
     val generatorScriptState
         : Seq[(String, (Path, pluginFrontend.InternalState))] =
       namedGenerators.map { case (name, plugin) =>
-        (name, pluginFrontend.prepare(plugin))
+        (name, pluginFrontend.prepare(plugin, extraEnv))
       }
 
     val cmdLine: Seq[String] = generatorScriptState.map {
@@ -122,11 +151,100 @@ object ProtocBridge {
     } ++ params
 
     try {
-      protoc(cmdLine)
+      protoc.run(
+        cmdLine,
+        extraEnv.toEnvMap.toSeq
+      )
     } finally {
-      generatorScriptState.foreach { case (_, (_, state)) =>
-        pluginFrontend.cleanup(state)
+      if (sys.env.getOrElse("PROTOCBRIDGE_NO_CLEANUP", "0") == "0") {
+        generatorScriptState.foreach { case (_, (_, state)) =>
+          pluginFrontend.cleanup(state)
+        }
+        secondaryOutputDir.toFile().listFiles().foreach(_.delete())
+        secondaryOutputDir.toFile.delete()
       }
     }
   }
+
+  // Deprecated methods
+  // Left bo binary backwards compatibility
+  @deprecated(
+    "Please use run() overload that takes ProtocRunner. Secondary outputs will fail to work.",
+    "0.9.0"
+  )
+  private[this] def run[ExitCode](
+      protoc: Seq[String] => ExitCode,
+      targets: Seq[Target],
+      params: Seq[String]
+  ): ExitCode = run(protoc, targets, params, PluginFrontend.newInstance)
+
+  @deprecated(
+    "Please use run() overload that takes ProtocRunner. Secondary outputs will fail to work.",
+    "0.9.0"
+  )
+  def run[ExitCode](
+      protoc: Seq[String] => ExitCode,
+      targets: Seq[Target],
+      params: Seq[String],
+      pluginFrontend: PluginFrontend
+  ): ExitCode =
+    run(
+      protoc,
+      targets,
+      params,
+      pluginFrontend,
+      artifact =>
+        throw new RuntimeException(
+          s"The version of sbt-protoc you are using is incompatible with '${artifact}' code generator. Please update sbt-protoc to a version >= 0.99.33"
+        )
+    )
+
+  @deprecated(
+    "Please use run() overload that takes ProtocRunner. Secondary outputs will fail to work.",
+    "0.9.0"
+  )
+  def run[ExitCode](
+      protoc: Seq[String] => ExitCode,
+      targets: Seq[Target],
+      params: Seq[String],
+      pluginFrontend: PluginFrontend,
+      classLoader: Artifact => ClassLoader
+  ): ExitCode = run(
+    ProtocRunner(protoc),
+    targets,
+    params,
+    pluginFrontend,
+    classLoader
+  )
+
+  @deprecated(
+    "Please use run() overload that takes ProtocRunner. Secondary outputs will fail to work.",
+    "0.9.0"
+  )
+  def runWithGenerators[ExitCode](
+      protoc: Seq[String] => ExitCode,
+      namedGenerators: Seq[(String, ProtocCodeGenerator)],
+      params: Seq[String],
+      pluginFrontend: PluginFrontend
+  ): ExitCode = runWithGenerators(
+    ProtocRunner(protoc),
+    namedGenerators,
+    params,
+    pluginFrontend
+  )
+
+  @deprecated(
+    "Please use run() overload that takes ProtocRunner. Secondary outputs will fail to work.",
+    "0.9.0"
+  )
+  def runWithGenerators[ExitCode](
+      protoc: Seq[String] => ExitCode,
+      namedGenerators: Seq[(String, ProtocCodeGenerator)],
+      params: Seq[String]
+  ): ExitCode = runWithGenerators(
+    ProtocRunner(protoc),
+    namedGenerators,
+    params,
+    PluginFrontend.newInstance
+  )
 }

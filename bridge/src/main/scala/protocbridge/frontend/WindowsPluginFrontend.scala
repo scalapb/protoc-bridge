@@ -3,6 +3,7 @@ package protocbridge.frontend
 import java.net.ServerSocket
 import java.nio.file.{Files, Path, Paths}
 
+import protocbridge.ExtraEnv
 import protocbridge.ProtocCodeGenerator
 
 import scala.concurrent.blocking
@@ -18,7 +19,10 @@ object WindowsPluginFrontend extends PluginFrontend {
 
   case class InternalState(batFile: Path)
 
-  override def prepare(plugin: ProtocCodeGenerator): (Path, InternalState) = {
+  override def prepare(
+      plugin: ProtocCodeGenerator,
+      env: ExtraEnv
+  ): (Path, InternalState) = {
     val ss = new ServerSocket(0)
     val state = createWindowsScript(ss.getLocalPort)
 
@@ -26,7 +30,7 @@ object WindowsPluginFrontend extends PluginFrontend {
       blocking {
         val client = ss.accept()
         val response =
-          PluginFrontend.runWithInputStream(plugin, client.getInputStream)
+          PluginFrontend.runWithInputStream(plugin, client.getInputStream, env)
         client.getOutputStream.write(response)
         client.close()
         ss.close()

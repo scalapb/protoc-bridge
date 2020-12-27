@@ -108,7 +108,8 @@ object PluginFrontend {
         b.write(buffer, 0, count)
       }
     }
-    b.writeBytes(env.toByteArrayAsField)
+    val envBytes = env.toByteArrayAsField
+    b.write(envBytes, 0, envBytes.length)
     b.toByteArray
   }
 

@@ -16,6 +16,7 @@ import scala.io.Source
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import TestUtils.readLines
+import protocbridge.frontend.PluginFrontend
 
 object TestJvmPlugin extends ProtocCodeGenerator {
 
@@ -75,7 +76,7 @@ class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
     val testOutDirs =
       (0 to 4).map(i => Files.createTempDirectory(s"testout$i").toFile())
 
-    ProtocBridge.run(
+    ProtocBridge.execute(
       RunProtoc,
       Seq(
         protocbridge.gens.java("3.8.0") -> javaOutDir,
@@ -131,7 +132,7 @@ class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
     val invocations = List.fill(parallelProtocInvocations) {
       Future(
         blocking(
-          ProtocBridge.run(
+          ProtocBridge.execute(
             RunProtoc,
             List.fill(generatorsByInvocation)(
               Target(

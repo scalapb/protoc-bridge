@@ -11,6 +11,7 @@ import protocbridge.TestUtils.readLines
 import protocbridge.RunProtoc
 import protocbridge.ExtraEnv
 import protocbridge.ExtraEnvParser
+import protocbridge.frontend.PluginFrontend
 
 object TestCodeGenApp extends CodeGenApp {
   def process(request: CodeGenRequest): CodeGenResponse = {
@@ -43,12 +44,13 @@ class CodeGenAppSpec extends AnyFlatSpec with Matchers {
       new File(getClass.getResource("/test.proto").getFile).getAbsolutePath
     val protoDir = new File(getClass.getResource("/").getFile).getAbsolutePath
     val cgOutDir = Files.createTempDirectory("testout_cg").toFile()
-    ProtocBridge.run(
+    ProtocBridge.execute(
       RunProtoc,
       Seq(
         JvmGenerator("cg", TestCodeGenApp) -> cgOutDir
       ),
-      Seq(protoFile, "-I", protoDir)
+      Seq(protoFile, "-I", protoDir),
+      _ => ???
     ) must be(0)
     readLines(new File(cgOutDir, "out.out")) must be(Seq("out!"))
     readLines(new File(cgOutDir, "env")) must be(Seq("true"))
@@ -59,12 +61,13 @@ class CodeGenAppSpec extends AnyFlatSpec with Matchers {
       new File(getClass.getResource("/error.proto").getFile).getAbsolutePath
     val protoDir = new File(getClass.getResource("/").getFile).getAbsolutePath
     val cgOutDir = Files.createTempDirectory("testout_cg").toFile()
-    ProtocBridge.run(
+    ProtocBridge.execute(
       RunProtoc,
       Seq(
         JvmGenerator("cg", TestCodeGenApp) -> cgOutDir
       ),
-      Seq(protoFile, "-I", protoDir)
+      Seq(protoFile, "-I", protoDir),
+      _ => ???
     ) must be(1)
   }
 }

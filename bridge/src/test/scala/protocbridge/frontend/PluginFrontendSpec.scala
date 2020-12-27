@@ -6,6 +6,7 @@ import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse
 import org.scalatestplus.scalacheck.ScalaCheckDrivenPropertyChecks
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
+import protocbridge.ExtraEnv
 
 class PluginFrontendSpec
     extends AnyFlatSpec
@@ -34,14 +35,20 @@ class PluginFrontendSpec
   }
 
   "readInputStreamToByteArray" should "read the input stream to a byte array" in {
+    val env = new ExtraEnv("foo")
     def readInput(bs: Array[Byte]) =
-      PluginFrontend.readInputStreamToByteArray(new ByteArrayInputStream(bs))
+      PluginFrontend.readInputStreamToByteArrayWithEnv(
+        new ByteArrayInputStream(bs),
+        env
+      )
 
-    readInput(Array.empty) must be(Array())
-    readInput(Array[Byte](1, 2, 3, 4)) must be(Array(1, 2, 3, 4))
+    readInput(Array.empty) must be(env.toByteArrayAsField)
+    readInput(Array[Byte](1, 2, 3, 4)) must be(
+      Array(1, 2, 3, 4) ++ env.toByteArrayAsField
+    )
     val special = Array.tabulate[Byte](10000) { n =>
       (n % 37).toByte
     }
-    readInput(special) must be(special)
+    readInput(special) must be(special ++ env.toByteArrayAsField)
   }
 }

@@ -95,7 +95,7 @@ object PluginFrontend {
     b.toByteArray
   }
 
-  private def readInputStreamToByteArrayWithEnv(
+  private[protocbridge] def readInputStreamToByteArrayWithEnv(
       fsin: InputStream,
       env: ExtraEnv
   ): Array[Byte] = {

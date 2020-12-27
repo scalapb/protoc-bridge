@@ -16,12 +16,19 @@ object ProtocBridge {
     * @param protoc a function that runs protoc with the given command line arguments.
     * @param targets a sequence of generators to invokes
     * @param params a sequence of additional params to pass to protoc
-    * @param pluginFrontend frontend to use.
     * @param classLoader function that provided a sandboxed ClassLoader for an artifact.
     * @tparam A
     * @return the return value from the protoc function.
     */
-  def run[ExitCode](
+  def execute[ExitCode](
+      protoc: ProtocRunner[ExitCode],
+      targets: Seq[Target],
+      params: Seq[String],
+      classLoader: Artifact => ClassLoader
+  ): ExitCode =
+    execute(protoc, targets, params, PluginFrontend.newInstance, classLoader)
+
+  private[protocbridge] def execute[ExitCode](
       protoc: ProtocRunner[ExitCode],
       targets: Seq[Target],
       params: Seq[String],
@@ -61,12 +68,12 @@ object ProtocBridge {
   }
 
   // For testing.
-  def run[ExitCode](
+  private[protocbridge] def execute[ExitCode](
       protoc: ProtocRunner[ExitCode],
       targets: Seq[Target],
       params: Seq[String],
       pluginFrontend: PluginFrontend
-  ): ExitCode = run[ExitCode](
+  ): ExitCode = execute[ExitCode](
     protoc,
     targets,
     params,
@@ -78,12 +85,11 @@ object ProtocBridge {
       )
   )
 
-  // For testing.
-  def run[ExitCode](
+  private[protocbridge] def execute[ExitCode](
       protoc: ProtocRunner[ExitCode],
       targets: Seq[Target],
       params: Seq[String]
-  ): ExitCode = run[ExitCode](
+  ): ExitCode = execute[ExitCode](
     protoc,
     targets,
     params,
@@ -124,7 +130,7 @@ object ProtocBridge {
     PluginFrontend.newInstance
   )
 
-  def runWithGenerators[ExitCode](
+  private def runWithGenerators[ExitCode](
       protoc: ProtocRunner[ExitCode],
       namedGenerators: Seq[(String, ProtocCodeGenerator)],
       params: Seq[String],
@@ -167,19 +173,18 @@ object ProtocBridge {
   }
 
   // Deprecated methods
-  // Left bo binary backwards compatibility
   @deprecated(
-    "Please use run() overload that takes ProtocRunner. Secondary outputs will fail to work.",
+    "Please use execute() overload that takes ProtocRunner. Secondary outputs will fail to work.",
     "0.9.0"
   )
-  private[this] def run[ExitCode](
-      protoc: Seq[String] => ExitCode,
+  def run[A](
+      protoc: Seq[String] => A,
       targets: Seq[Target],
       params: Seq[String]
-  ): ExitCode = run(protoc, targets, params, PluginFrontend.newInstance)
+  ): A = run(protoc, targets, params, PluginFrontend.newInstance)
 
   @deprecated(
-    "Please use run() overload that takes ProtocRunner. Secondary outputs will fail to work.",
+    "Please use execute() overload that takes ProtocRunner. Secondary outputs will fail to work.",
     "0.9.0"
   )
   def run[ExitCode](
@@ -200,7 +205,7 @@ object ProtocBridge {
     )
 
   @deprecated(
-    "Please use run() overload that takes ProtocRunner. Secondary outputs will fail to work.",
+    "Please use execute(). Secondary outputs will fail to work.",
     "0.9.0"
   )
   def run[ExitCode](
@@ -209,7 +214,7 @@ object ProtocBridge {
       params: Seq[String],
       pluginFrontend: PluginFrontend,
       classLoader: Artifact => ClassLoader
-  ): ExitCode = run(
+  ): ExitCode = execute(
     ProtocRunner(protoc),
     targets,
     params,
@@ -218,33 +223,18 @@ object ProtocBridge {
   )
 
   @deprecated(
-    "Please use run() overload that takes ProtocRunner. Secondary outputs will fail to work.",
+    "Please use execute(). Secondary outputs will fail to work.",
     "0.9.0"
   )
   def runWithGenerators[ExitCode](
       protoc: Seq[String] => ExitCode,
       namedGenerators: Seq[(String, ProtocCodeGenerator)],
       params: Seq[String],
-      pluginFrontend: PluginFrontend
+      pluginFrontend: PluginFrontend = PluginFrontend.newInstance
   ): ExitCode = runWithGenerators(
     ProtocRunner(protoc),
     namedGenerators,
     params,
     pluginFrontend
-  )
-
-  @deprecated(
-    "Please use run() overload that takes ProtocRunner. Secondary outputs will fail to work.",
-    "0.9.0"
-  )
-  def runWithGenerators[ExitCode](
-      protoc: Seq[String] => ExitCode,
-      namedGenerators: Seq[(String, ProtocCodeGenerator)],
-      params: Seq[String]
-  ): ExitCode = runWithGenerators(
-    ProtocRunner(protoc),
-    namedGenerators,
-    params,
-    PluginFrontend.newInstance
   )
 }

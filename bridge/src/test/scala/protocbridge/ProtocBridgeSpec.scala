@@ -33,7 +33,12 @@ class ProtocBridgeSpec extends AnyFlatSpec with Matchers {
     (JvmGenerator("fff", FoobarGen), Seq(opt1, opt2))
 
   def run(targets: Seq[Target], params: Seq[String] = Seq.empty) =
-    ProtocBridge.run(ProtocRunner(args => args), targets, params, TestFrontend)
+    ProtocBridge.execute(
+      ProtocRunner(args => args),
+      targets,
+      params,
+      TestFrontend
+    )
 
   "run" should "pass params when there are no targets" in {
     run(Seq.empty, Seq.empty) must be(Seq.empty)

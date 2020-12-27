@@ -39,14 +39,9 @@ lazy val bridge: Project = project
     ),
     mimaBinaryIssueFilters ++= Seq(
       ProblemFilters
-        .exclude[IncompatibleMethTypeProblem]("protocbridge.ProtocBridge.run"),
-      ProblemFilters
         .exclude[DirectMissingMethodProblem]("protocbridge.frontend.*"),
       ProblemFilters.exclude[ReversedMissingMethodProblem](
         "protocbridge.frontend.PluginFrontend.prepare"
-      ),
-      ProblemFilters.exclude[DirectMissingMethodProblem](
-        "protocbridge.ProtocBridge.runWithGenerators$default$4"
       )
     )
   )

@@ -10,10 +10,11 @@ import protocbridge.JvmGenerator
 import protocbridge.TestUtils.readLines
 import protocbridge.RunProtoc
 import protocbridge.ExtraEnv
+import protocbridge.ExtraEnvParser
 
 object TestCodeGenApp extends CodeGenApp {
   def process(request: CodeGenRequest): CodeGenResponse = {
-    val env = ExtraEnv.fromCodeGeneratorRequest(request.asProto)
+    val env = ExtraEnvParser.fromCodeGeneratorRequest(request.asProto)
     assert(new File(env.secondaryOutputDir).isDirectory())
 
     if (request.filesToGenerate.exists(_.getName().contains("error")))

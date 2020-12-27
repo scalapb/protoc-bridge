@@ -13,7 +13,7 @@ class ExtraEnvSpec extends AnyFlatSpec with Matchers {
     val env = new ExtraEnv(secondaryOutputDir = "foo")
     val bs = ByteString.copyFrom(env.toByteArrayAsField)
     val requestWithEnv = CodeGeneratorRequest.parseFrom(env.toByteArrayAsField)
-    ExtraEnv
+    ExtraEnvParser
       .fromCodeGeneratorRequest(requestWithEnv)
       .secondaryOutputDir must be(env.secondaryOutputDir)
 

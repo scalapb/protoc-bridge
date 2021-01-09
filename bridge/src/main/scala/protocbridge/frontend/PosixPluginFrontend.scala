@@ -61,9 +61,10 @@ object PosixPluginFrontend extends PluginFrontend {
   }
 
   private def createShellScript(inputPipe: Path, outputPipe: Path): Path = {
+    val shell = sys.env.getOrElse("PROTOCBRIDGE_SHELL", "/bin/sh")
     val scriptName = PluginFrontend.createTempFile(
       "",
-      s"""|#!/usr/bin/env sh
+      s"""|#!$shell
           |set -e
           |cat /dev/stdin > "$inputPipe"
           |cat "$outputPipe"

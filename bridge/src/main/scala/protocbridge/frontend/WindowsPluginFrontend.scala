@@ -41,7 +41,9 @@ object WindowsPluginFrontend extends PluginFrontend {
   }
 
   override def cleanup(state: InternalState): Unit = {
-    Files.delete(state.batFile)
+    if (sys.props.get("protocbridge.debug") != Some("1")) {
+      Files.delete(state.batFile)
+    }
   }
 
   private def createWindowsScript(port: Int): InternalState = {

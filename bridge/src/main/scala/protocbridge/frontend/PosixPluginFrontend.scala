@@ -48,10 +48,12 @@ object PosixPluginFrontend extends PluginFrontend {
   }
 
   override def cleanup(state: InternalState): Unit = {
-    Files.delete(state.inputPipe)
-    Files.delete(state.outputPipe)
-    Files.delete(state.tempDir)
-    Files.delete(state.shellScript)
+    if (sys.props.get("protocbridge.debug") != Some("1")) {
+      Files.delete(state.inputPipe)
+      Files.delete(state.outputPipe)
+      Files.delete(state.tempDir)
+      Files.delete(state.shellScript)
+    }
   }
 
   private def createPipe(tempDirPath: Path, name: String): Path = {

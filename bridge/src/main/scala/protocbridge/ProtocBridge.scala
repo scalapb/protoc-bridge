@@ -13,27 +13,50 @@ object ProtocBridge {
 
   /** Runs protoc with a given set of targets.
     *
+    * @param classLoader function that provided a sandboxed ClassLoader for a set of artifacts.
     * @param protoc a function that runs protoc with the given command line arguments.
     * @param targets a sequence of generators to invokes
     * @param params a sequence of additional params to pass to protoc
-    * @param classLoader function that provided a sandboxed ClassLoader for an artifact.
-    * @tparam A
     * @return the return value from the protoc function.
     */
+  def execute[ExitCode](
+      classLoader: Seq[Artifact] => ClassLoader,
+      protoc: ProtocRunner[ExitCode],
+      targets: Seq[Target],
+      params: Seq[String]
+  ): ExitCode =
+    execute(
+      protoc,
+      targets,
+      params,
+      PluginFrontend.newInstance,
+      Right(classLoader)
+    )
+
+  @deprecated(
+    "use the overload with a classLoader parameter accepting several artifacts",
+    "0.9.2"
+  )
   def execute[ExitCode](
       protoc: ProtocRunner[ExitCode],
       targets: Seq[Target],
       params: Seq[String],
       classLoader: Artifact => ClassLoader
   ): ExitCode =
-    execute(protoc, targets, params, PluginFrontend.newInstance, classLoader)
+    execute(
+      protoc,
+      targets,
+      params,
+      PluginFrontend.newInstance,
+      Left(classLoader)
+    )
 
   private[protocbridge] def execute[ExitCode](
       protoc: ProtocRunner[ExitCode],
       targets: Seq[Target],
       params: Seq[String],
       pluginFrontend: PluginFrontend,
-      classLoader: Artifact => ClassLoader
+      classLoader: Either[Artifact => ClassLoader, Seq[Artifact] => ClassLoader]
   ): ExitCode = {
 
     // The same JvmGenerator might be passed several times, but requires separate frontends
@@ -41,8 +64,11 @@ object ProtocBridge {
       case (t @ Target(gen: JvmGenerator, _, _), i) =>
         t.copy(generator = gen.copy(name = s"${gen.name}_$i"))
       case (t @ Target(gen: SandboxedJvmGenerator, _, _), i) =>
-        val codeGen =
-          gen.resolver(classLoader(gen.artifact))
+        val cl = classLoader match {
+          case Left(single) => single(gen.artifact)
+          case Right(multi) => multi(gen.artifact +: gen.extraArtifacts)
+        }
+        val codeGen = gen.resolver(cl)
         t.copy(generator =
           JvmGenerator(name = codeGen.name + s"_$i", gen = codeGen)
         )
@@ -78,11 +104,12 @@ object ProtocBridge {
     targets,
     params,
     pluginFrontend,
-    (art: Artifact) =>
+    Left((art: Artifact) =>
       throw new RuntimeException(
         s"Unale to load sandboxed plugin for ${art} since ClassLoader was not provided. If " +
           "using sbt-protoc, please update to version 1.0.0-RC5 or later."
       )
+    )
   )
 
   private[protocbridge] def execute[ExitCode](
@@ -219,7 +246,7 @@ object ProtocBridge {
     targets,
     params,
     pluginFrontend,
-    classLoader
+    Left(classLoader)
   )
 
   @deprecated(

@@ -41,11 +41,13 @@ final case class JvmGenerator(name: String, gen: ProtocCodeGenerator)
   * risk of conflict.
   *
   * artifact: Artifact containing the generator class.
+  * extraArtifacts: Artifacts to be resolved together with the main Artifact (potentially causing eviction)
   * resolver: Using a ClassLoader, return a new instance of a ProtocCodeGenerator.
   */
 final case class SandboxedJvmGenerator private (
     name: String,
     artifact: Artifact,
+    extraArtifacts: Seq[Artifact],
     suggestedDependencies: Seq[Artifact],
     resolver: ClassLoader => ProtocCodeGenerator
 ) extends Generator {
@@ -58,8 +60,39 @@ final case class SandboxedJvmGenerator private (
     this(
       name,
       artifact,
+      Nil,
       suggestedDependencies,
       SandboxedJvmGenerator.load(generatorClass, _)
+    )
+
+  // kept for binary compatiblity with 0.9.1
+  private[protocbridge] def this(
+      name: String,
+      artifact: Artifact,
+      suggestedDependencies: Seq[Artifact],
+      resolver: ClassLoader => ProtocCodeGenerator
+  ) =
+    this(
+      name,
+      artifact,
+      Nil,
+      suggestedDependencies,
+      resolver
+    )
+
+  // kept for binary compatiblity with 0.9.1
+  private[protocbridge] def copy(
+      name: String = name,
+      artifact: Artifact = artifact,
+      suggestedDependencies: Seq[Artifact] = suggestedDependencies,
+      resolver: ClassLoader => ProtocCodeGenerator = resolver
+  ): SandboxedJvmGenerator =
+    SandboxedJvmGenerator(
+      name,
+      artifact,
+      extraArtifacts,
+      suggestedDependencies,
+      resolver
     )
 }
 
@@ -75,6 +108,23 @@ object SandboxedJvmGenerator {
     SandboxedJvmGenerator(
       name,
       artifact,
+      Nil,
+      suggestedDependencies,
+      SandboxedJvmGenerator.load(generatorClass, _)
+    )
+
+  /** Instantiates a SandboxedJvmGenerator that loads an object named generatorClass */
+  def forModule(
+      name: String,
+      artifact: Artifact,
+      extraArtifacts: Seq[Artifact],
+      generatorClass: String,
+      suggestedDependencies: Seq[Artifact]
+  ): SandboxedJvmGenerator =
+    SandboxedJvmGenerator(
+      name,
+      artifact,
+      extraArtifacts,
       suggestedDependencies,
       SandboxedJvmGenerator.load(generatorClass, _)
     )
@@ -87,10 +137,27 @@ object SandboxedJvmGenerator {
       resolver: ClassLoader => ProtocCodeGenerator
   ): SandboxedJvmGenerator =
     SandboxedJvmGenerator(
+      name,
+      artifact,
+      Nil,
+      suggestedDependencies,
+      resolver
+    )
+
+  /** Instantiates a SandboxedJvmGenerator that uses a class loader to load a generator */
+  def forResolver(
       name: String,
       artifact: Artifact,
+      extraArtifacts: Seq[Artifact],
       suggestedDependencies: Seq[Artifact],
       resolver: ClassLoader => ProtocCodeGenerator
+  ): SandboxedJvmGenerator =
+    SandboxedJvmGenerator(
+      name,
+      artifact,
+      extraArtifacts,
+      suggestedDependencies,
+      resolver
     )
 
   // kept for binary compatiblity with 0.9.0-RC1
@@ -105,6 +172,21 @@ object SandboxedJvmGenerator {
       artifact,
       generatorClass,
       suggestedDependencies
+    )
+
+  // kept for binary compatiblity with 0.9.1
+  @deprecated("use the overload with extraArtifacts", "0.9.2")
+  def apply(
+      name: String,
+      artifact: Artifact,
+      suggestedDependencies: Seq[Artifact],
+      resolver: ClassLoader => ProtocCodeGenerator
+  ): SandboxedJvmGenerator =
+    forResolver(
+      name,
+      artifact,
+      suggestedDependencies,
+      resolver
     )
 
   def load(

@@ -90,36 +90,25 @@ class ProtocBridgeSpec extends AnyFlatSpec with Matchers {
     run(
       Seq(
         Target(gens.plugin("foo", "/path/to/plugin"), TmpPath),
-        Target(gens.plugin("foo", "/path/to/plugin"), TmpPath1),
+        Target(gens.plugin("foo", "/otherpath/to/plugin"), TmpPath1),
         Target(gens.plugin("foo"), TmpPath2),
         Target(gens.plugin("bar"), TmpPath)
       )
     ) must be(
       Seq(
-        "--plugin=protoc-gen-foo=/path/to/plugin",
-        s"--foo_out=$TmpPath",
-        s"--foo_out=$TmpPath1",
-        s"--foo_out=$TmpPath2",
+        "--plugin=protoc-gen-foo_0=/path/to/plugin",
+        "--plugin=protoc-gen-foo_1=/otherpath/to/plugin",
+        s"--foo_0_out=$TmpPath",
+        s"--foo_1_out=$TmpPath1",
+        s"--foo_2_out=$TmpPath2",
         s"--bar_out=$TmpPath"
       )
     )
   }
 
-  it should "not allow ambigious paths for plugins" in {
-    intercept[RuntimeException] {
-      run(
-        Seq(
-          Target(gens.plugin("foo", "/path/to/plugin"), TmpPath1),
-          Target(gens.plugin("foo", "/other/path/to/plugin"), TmpPath1)
-        )
-      )
-    }.getMessage() must be("Different paths found for the plugin: foo")
-  }
-
-  val DefineFlag = "--plugin=protoc-gen-jvm_(.*?)=null".r
-  val UseFlag = s"--jvm_(.*?)_out=${Pattern.quote(TmpPath.toString)}".r
-  val UseFlagParams =
-    s"--jvm_(.*?)_opt=x,y".r
+  val DefineFlag = "--plugin=protoc-gen-(.*?)=null".r
+  val UseFlag = s"--(.*?)_out=${Pattern.quote(TmpPath.toString)}".r
+  val UseFlagParams = s"--(.*?)_opt=x,y".r
 
   it should "allow using FooBarGen" in {
     run(Seq(Target(FoobarGen, TmpPath))) match {
@@ -142,13 +131,13 @@ class ProtocBridgeSpec extends AnyFlatSpec with Matchers {
     ) must be(
       Seq(
         "--plugin=protoc-gen-fff_0=null",
-        "--plugin=protoc-gen-jvm_1=null",
-        "--plugin=protoc-gen-fff_2=null",
+        "--plugin=protoc-gen-fff_1=null",
+        "--plugin=protoc-gen-jvm=null",
         s"--fff_0_out=$TmpPath",
         s"--fff_0_opt=x,y",
-        s"--jvm_1_out=$TmpPath1",
-        s"--fff_2_out=$TmpPath2",
-        s"--fff_2_opt=foo,bar"
+        s"--fff_1_out=$TmpPath2",
+        s"--fff_1_opt=foo,bar",
+        s"--jvm_out=$TmpPath1"
       )
     )
   }

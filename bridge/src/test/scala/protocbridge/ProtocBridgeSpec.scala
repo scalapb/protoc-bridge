@@ -89,18 +89,29 @@ class ProtocBridgeSpec extends AnyFlatSpec with Matchers {
 
     run(
       Seq(
-        Target(gens.plugin("foo", "/path/to/plugin"), TmpPath),
-        Target(gens.plugin("foo", "/otherpath/to/plugin"), TmpPath1),
-        Target(gens.plugin("foo"), TmpPath2),
+        Target(gens.plugin("foo", "/path/to/plugin"), TmpPath, Seq("w")),
+        Target(gens.plugin("foo", "/path/to/plugin"), TmpPath, Seq("x")),
+        Target(gens.plugin("foo", "/otherpath/to/plugin"), TmpPath1, Seq("y")),
+        Target(gens.plugin("foo", "/otherpath/to/plugin"), TmpPath2, Seq("y")),
+        Target(gens.plugin("foo"), TmpPath2, Seq("z")),
         Target(gens.plugin("bar"), TmpPath)
       )
     ) must be(
       Seq(
         "--plugin=protoc-gen-foo_0=/path/to/plugin",
-        "--plugin=protoc-gen-foo_1=/otherpath/to/plugin",
+        "--plugin=protoc-gen-foo_1=/path/to/plugin",
+        "--plugin=protoc-gen-foo_2=/otherpath/to/plugin",
+        "--plugin=protoc-gen-foo_3=/otherpath/to/plugin",
         s"--foo_0_out=$TmpPath",
-        s"--foo_1_out=$TmpPath1",
-        s"--foo_2_out=$TmpPath2",
+        s"--foo_0_opt=w",
+        s"--foo_1_out=$TmpPath",
+        s"--foo_1_opt=x",
+        s"--foo_2_out=$TmpPath1",
+        s"--foo_2_opt=y",
+        s"--foo_3_out=$TmpPath2",
+        s"--foo_3_opt=y",
+        s"--foo_4_out=$TmpPath2",
+        s"--foo_4_opt=z",
         s"--bar_out=$TmpPath"
       )
     )

@@ -36,33 +36,46 @@ object ProtocBridge {
       classLoader: Artifact => ClassLoader
   ): ExitCode = {
 
-    // The same JvmGenerator might be passed several times, but requires separate frontends
-    val targetsSuffixed = targets.zipWithIndex.map {
-      case (t @ Target(gen: JvmGenerator, _, _), i) =>
-        t.copy(generator = gen.copy(name = s"${gen.name}_$i"))
-      case (t @ Target(gen: SandboxedJvmGenerator, _, _), i) =>
-        val codeGen =
-          gen.resolver(classLoader(gen.artifact))
-        t.copy(generator =
-          JvmGenerator(name = codeGen.name + s"_$i", gen = codeGen)
-        )
-      case (t, _) => t
-    }
+    // The same JvmGenerator or PluginGenerator might be passed several times with different options
+    val targetsSuffixed =
+      targets
+        .groupBy(_.generator.name)
+        .values
+        .flatMap { targets =>
+          // don't add suffix if we have only one generator for that name
+          if (targets.length == 1) targets
+          else {
+            targets.zipWithIndex.map {
+              case (t @ Target(gen: JvmGenerator, _, _), i) =>
+                t.copy(generator = gen.copy(name = s"${gen.name}_$i"))
+              case (t @ Target(gen: SandboxedJvmGenerator, _, _), i) =>
+                val codeGen =
+                  gen.resolver(classLoader(gen.artifact))
+                t.copy(generator =
+                  JvmGenerator(name = codeGen.name + s"_$i", gen = codeGen)
+                )
+              case (t @ Target(gen: PluginGenerator, _, _), i) =>
+                t.copy(generator = gen.copy(name = s"${gen.name}_$i"))
+              case (t, _) => t
+            }
+          }
+        }
+        .toSeq
 
     val namedGenerators: Seq[(String, ProtocCodeGenerator)] =
       targetsSuffixed.collect { case Target(gen: JvmGenerator, _, _) =>
         (gen.name, gen.gen)
       }
 
-    val cmdLine: Seq[String] = pluginArgs(targets) ++ targetsSuffixed.flatMap {
-      p =>
+    val cmdLine: Seq[String] =
+      pluginArgs(targetsSuffixed) ++ (targetsSuffixed).flatMap { p =>
         val maybeOptions =
           if (p.options.isEmpty) Nil
           else {
             s"--${p.generator.name}_opt=${p.options.mkString(",")}" :: Nil
           }
         s"--${p.generator.name}_out=${p.outputPath.getAbsolutePath}" :: maybeOptions
-    } ++ params
+      } ++ params
 
     runWithGenerators(protoc, namedGenerators, cmdLine, pluginFrontend)
   }
@@ -96,28 +109,10 @@ object ProtocBridge {
     PluginFrontend.newInstance
   )
 
-  private def pluginArgs(targets: Seq[Target]): Seq[String] = {
-    val pluginsAndPaths: Seq[(String, String)] = targets.collect {
-      case Target(PluginGenerator(pluginName, _, Some(pluginPath)), _, _) =>
-        (pluginName, pluginPath)
-    }.distinct
-
-    val pluginsWithDifferentPaths =
-      pluginsAndPaths.groupBy(_._1).values.collect {
-        case (pluginName, _) :: rest if rest.nonEmpty => pluginName
-      }
-
-    if (pluginsWithDifferentPaths.nonEmpty) {
-      throw new RuntimeException(
-        "Different paths found for the plugin: " + pluginsWithDifferentPaths
-          .mkString(",")
-      )
-    }
-
-    pluginsAndPaths.map { case (name, path) =>
+  private def pluginArgs(targets: Seq[Target]): Seq[String] =
+    targets.collect { case Target(PluginGenerator(name, _, Some(path)), _, _) =>
       s"--plugin=protoc-gen-$name=$path"
     }
-  }
 
   def runWithGenerators[ExitCode](
       protoc: ProtocRunner[ExitCode],

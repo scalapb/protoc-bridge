@@ -44,26 +44,23 @@ object ProtocBridge {
       case t => t
     }
 
+    def canSuffix(gen: PluginGenerator): Boolean =
+      // don't add any suffix if we have only one native, path-less generator with the same name to maintain backward
+      // compatibility with <= 0.9.1 clients that assume that this native generator passed once would not be suffixed,
+      // and therefore could declare that plugin path with the exact name used by the generator passed in the target
+      // https://github.com/thesamet/sbt-protoc/blob/v1.0.0/src/main/scala/sbtprotoc/ProtocPlugin.scala#L515
+      gen.path.isDefined ||
+        targetsResolved.count(_.generator.name == gen.name) > 1
+
     // Several targets might use a generator not built-in in protoc (native or bridge) with the same name,
     // so we suffix them to avoid collisions when passing them as protoc plugins
-    val targetsSuffixed =
-      targetsResolved
-        .groupBy(_.generator.name)
-        .values
-        .flatMap { targets =>
-          // don't add suffix if we have only one generator for that name
-          if (targets.length == 1) targets
-          else {
-            targets.zipWithIndex.map {
-              case (t @ Target(gen: JvmGenerator, _, _), i) =>
-                t.copy(generator = gen.copy(name = s"${gen.name}_$i"))
-              case (t @ Target(gen: PluginGenerator, _, _), i) =>
-                t.copy(generator = gen.copy(name = s"${gen.name}_$i"))
-              case (t, _) => t
-            }
-          }
-        }
-        .toSeq
+    val targetsSuffixed = targetsResolved.zipWithIndex.map {
+      case (t @ Target(gen: JvmGenerator, _, _), i) =>
+        t.copy(generator = gen.copy(name = s"${gen.name}_$i"))
+      case (t @ Target(gen: PluginGenerator, _, _), i) if canSuffix(gen) =>
+        t.copy(generator = gen.copy(name = s"${gen.name}_$i"))
+      case (t, _) => t
+    }
 
     val bridgeGenerators: Seq[(String, ProtocCodeGenerator)] =
       targetsSuffixed.collect { case Target(gen: JvmGenerator, _, _) =>

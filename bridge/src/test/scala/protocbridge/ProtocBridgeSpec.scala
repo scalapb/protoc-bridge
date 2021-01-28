@@ -76,9 +76,15 @@ class ProtocBridgeSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "pass external plugins correctly" in {
+
+    // ensure no suffix is added if we have only one native, path-less generator with the same name to maintain backward
+    // compatibility with <= 0.9.1 clients that assume that this native generator passed once would not be suffixed,
+    // and therefore could declare that plugin path with the exact name used by the generator passed in the target
+    // https://github.com/thesamet/sbt-protoc/blob/v1.0.0/src/main/scala/sbtprotoc/ProtocPlugin.scala#L515
     run(Seq(Target(gens.plugin("foo"), TmpPath))) must be(
       Seq(s"--foo_out=$TmpPath")
     )
+
     run(
       Seq(
         Target(gens.plugin("foo"), TmpPath),
@@ -93,8 +99,8 @@ class ProtocBridgeSpec extends AnyFlatSpec with Matchers {
       )
     ) must be(
       Seq(
-        "--plugin=protoc-gen-foo=/path/to/plugin",
-        s"--foo_out=$TmpPath",
+        "--plugin=protoc-gen-foo_0=/path/to/plugin",
+        s"--foo_0_out=$TmpPath",
         s"--bar_out=$TmpPath2"
       )
     )
@@ -154,13 +160,13 @@ class ProtocBridgeSpec extends AnyFlatSpec with Matchers {
     ) must be(
       Seq(
         "--plugin=protoc-gen-fff_0=null",
-        "--plugin=protoc-gen-fff_1=null",
-        "--plugin=protoc-gen-jvm=null",
+        "--plugin=protoc-gen-jvm_1=null",
+        "--plugin=protoc-gen-fff_2=null",
         s"--fff_0_out=$TmpPath",
         s"--fff_0_opt=x,y",
-        s"--fff_1_out=$TmpPath2",
-        s"--fff_1_opt=foo,bar",
-        s"--jvm_out=$TmpPath1"
+        s"--jvm_1_out=$TmpPath1",
+        s"--fff_2_out=$TmpPath2",
+        s"--fff_2_opt=foo,bar"
       )
     )
   }
@@ -179,6 +185,31 @@ class ProtocBridgeSpec extends AnyFlatSpec with Matchers {
         s"--jvm_0_opt=x,y",
         s"--jvm_1_out=$TmpPath2",
         s"--jvm_1_opt=foo,bar"
+      )
+    )
+  }
+
+  it should "preserve the order of targets" in {
+    run(
+      Seq(
+        Target(sandboxedGen("sandboxed"), TmpPath1),
+        Target(foobarGen("foo", "bar"), TmpPath2),
+        FoobarGen -> TmpPath,
+        Target(sandboxedGen("x", "y"), TmpPath2)
+      )
+    ) must be(
+      Seq(
+        "--plugin=protoc-gen-jvm_0=null",
+        "--plugin=protoc-gen-fff_1=null",
+        "--plugin=protoc-gen-jvm_2=null",
+        "--plugin=protoc-gen-jvm_3=null",
+        s"--jvm_0_out=$TmpPath1",
+        s"--jvm_0_opt=sandboxed",
+        s"--fff_1_out=$TmpPath2",
+        s"--fff_1_opt=foo,bar",
+        s"--jvm_2_out=$TmpPath",
+        s"--jvm_3_out=$TmpPath2",
+        s"--jvm_3_opt=x,y"
       )
     )
   }

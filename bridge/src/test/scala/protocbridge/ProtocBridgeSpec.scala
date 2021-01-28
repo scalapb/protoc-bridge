@@ -6,6 +6,10 @@ import java.util.regex.Pattern
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 
+object FoobarGen extends ProtocCodeGenerator {
+  override def run(request: Array[Byte]): Array[Byte] = new Array[Byte](0)
+}
+
 class ProtocBridgeSpec extends AnyFlatSpec with Matchers {
   val TmpPath = new File("/tmp").getAbsoluteFile
   val TmpPath1 = new File("/tmp/x").getAbsoluteFile
@@ -25,19 +29,27 @@ class ProtocBridgeSpec extends AnyFlatSpec with Matchers {
     def cleanup(state: InternalState): Unit = {}
   }
 
-  object FoobarGen extends ProtocCodeGenerator {
-    override def run(request: Array[Byte]): Array[Byte] = new Array[Byte](0)
-  }
-
   def foobarGen(opt1: String, opt2: String): (Generator, Seq[String]) =
     (JvmGenerator("fff", FoobarGen), Seq(opt1, opt2))
+
+  def sandboxedGen(opts: String*): (Generator, Seq[String]) =
+    (
+      SandboxedJvmGenerator.forModule(
+        "sandboxed",
+        Artifact("group", "id", "version"),
+        "protocbridge.FoobarGen$",
+        Nil
+      ),
+      opts
+    )
 
   def run(targets: Seq[Target], params: Seq[String] = Seq.empty) =
     ProtocBridge.execute(
       ProtocRunner(args => args),
       targets,
       params,
-      TestFrontend
+      TestFrontend,
+      _ => getClass.getClassLoader
     )
 
   "run" should "pass params when there are no targets" in {
@@ -149,6 +161,24 @@ class ProtocBridgeSpec extends AnyFlatSpec with Matchers {
         s"--fff_1_out=$TmpPath2",
         s"--fff_1_opt=foo,bar",
         s"--jvm_out=$TmpPath1"
+      )
+    )
+  }
+
+  it should "allow using sandboxedGen multiple times" in {
+    run(
+      Seq(
+        Target(sandboxedGen("x", "y"), TmpPath1),
+        Target(sandboxedGen("foo", "bar"), TmpPath2)
+      )
+    ) must be(
+      Seq(
+        "--plugin=protoc-gen-jvm_0=null",
+        "--plugin=protoc-gen-jvm_1=null",
+        s"--jvm_0_out=$TmpPath1",
+        s"--jvm_0_opt=x,y",
+        s"--jvm_1_out=$TmpPath2",
+        s"--jvm_1_opt=foo,bar"
       )
     )
   }

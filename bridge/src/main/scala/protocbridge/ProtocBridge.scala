@@ -36,9 +36,18 @@ object ProtocBridge {
       classLoader: Artifact => ClassLoader
   ): ExitCode = {
 
-    // The same JvmGenerator or PluginGenerator might be passed several times with different options
+    // Resolve SandboxedJvmGenerators into JvmGenerators
+    val targetsResolved = targets.map {
+      case t @ Target(gen: SandboxedJvmGenerator, _, _) =>
+        val sandboxedGen = gen.resolver(classLoader(gen.artifact))
+        t.copy(generator = JvmGenerator(name = sandboxedGen.name, sandboxedGen))
+      case t => t
+    }
+
+    // Several targets might use a generator not built-in in protoc (native or bridge) with the same name,
+    // so we suffix them to avoid collisions when passing them as protoc plugins
     val targetsSuffixed =
-      targets
+      targetsResolved
         .groupBy(_.generator.name)
         .values
         .flatMap { targets =>
@@ -48,12 +57,6 @@ object ProtocBridge {
             targets.zipWithIndex.map {
               case (t @ Target(gen: JvmGenerator, _, _), i) =>
                 t.copy(generator = gen.copy(name = s"${gen.name}_$i"))
-              case (t @ Target(gen: SandboxedJvmGenerator, _, _), i) =>
-                val codeGen =
-                  gen.resolver(classLoader(gen.artifact))
-                t.copy(generator =
-                  JvmGenerator(name = codeGen.name + s"_$i", gen = codeGen)
-                )
               case (t @ Target(gen: PluginGenerator, _, _), i) =>
                 t.copy(generator = gen.copy(name = s"${gen.name}_$i"))
               case (t, _) => t
@@ -62,13 +65,13 @@ object ProtocBridge {
         }
         .toSeq
 
-    val namedGenerators: Seq[(String, ProtocCodeGenerator)] =
+    val bridgeGenerators: Seq[(String, ProtocCodeGenerator)] =
       targetsSuffixed.collect { case Target(gen: JvmGenerator, _, _) =>
         (gen.name, gen.gen)
       }
 
     val cmdLine: Seq[String] =
-      pluginArgs(targetsSuffixed) ++ (targetsSuffixed).flatMap { p =>
+      pluginArgs(targetsSuffixed) ++ targetsSuffixed.flatMap { p =>
         val maybeOptions =
           if (p.options.isEmpty) Nil
           else {
@@ -77,10 +80,9 @@ object ProtocBridge {
         s"--${p.generator.name}_out=${p.outputPath.getAbsolutePath}" :: maybeOptions
       } ++ params
 
-    runWithGenerators(protoc, namedGenerators, cmdLine, pluginFrontend)
+    runWithGenerators(protoc, bridgeGenerators, cmdLine, pluginFrontend)
   }
 
-  // For testing.
   private[protocbridge] def execute[ExitCode](
       protoc: ProtocRunner[ExitCode],
       targets: Seq[Target],
@@ -127,7 +129,7 @@ object ProtocBridge {
 
   private def runWithGenerators[ExitCode](
       protoc: ProtocRunner[ExitCode],
-      namedGenerators: Seq[(String, ProtocCodeGenerator)],
+      bridgeGenerators: Seq[(String, ProtocCodeGenerator)],
       params: Seq[String],
       pluginFrontend: PluginFrontend
   ): ExitCode = {
@@ -142,7 +144,7 @@ object ProtocBridge {
 
     val generatorScriptState
         : Seq[(String, (Path, pluginFrontend.InternalState))] =
-      namedGenerators.map { case (name, plugin) =>
+      bridgeGenerators.map { case (name, plugin) =>
         (name, pluginFrontend.prepare(plugin, extraEnv))
       }
 

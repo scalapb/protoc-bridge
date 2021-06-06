@@ -23,6 +23,14 @@ object gens {
     PluginGenerator(name, Nil, Some(path))
 
   val javanano = BuiltinGenerator("javanano")
+  val kotlin: BuiltinGenerator = kotlin("3.17.2")
+  def kotlin(runtimeVersion: String): BuiltinGenerator =
+    BuiltinGenerator(
+      "kotlin",
+      suggestedDependencies =
+        Seq(Artifact(JavaProtobufArtifact, "protobuf-kotlin", runtimeVersion))
+    )
+
   val js = BuiltinGenerator("js")
   val objc = BuiltinGenerator("objc")
   val python = BuiltinGenerator("python")

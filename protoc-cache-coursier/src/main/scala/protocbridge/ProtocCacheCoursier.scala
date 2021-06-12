@@ -50,23 +50,15 @@ object CoursierProtocCache {
     s"${dep.publication.name}-${dep.publication.classifier.value}-${dep.version}$ext"
   }
 
-  private[this] def protocDep(version: String): Dependency = {
-    val classifier = SystemDetector.detectedClassifier() match {
-      // For M1 ARM, reuse a compatible osx-x86_64 version until binary support for
-      // osx-aarch_64 is added. Workaround for:
-      // https://github.com/protocolbuffers/protobuf/issues/8062
-      case "osx-aarch_64" => "osx-x86_64"
-      case x              => x
-    }
+  private[this] def protocDep(version: String): Dependency =
     dep"com.google.protobuf:protoc"
       .withVersion(version)
       .withPublication(
         "protoc",
         Type("jar"),
         Extension("exe"),
-        Classifier(classifier)
+        Classifier(SystemDetector.detectedClassifier())
       )
-  }
 
   // For backwards binary compatibility
   private def runProtoc(version: String, args: Seq[String]): Int =

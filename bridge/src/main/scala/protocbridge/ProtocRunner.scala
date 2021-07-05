@@ -33,6 +33,9 @@ object ProtocRunner {
       def run(args: Seq[String], extraEnv: Seq[(String, String)]): A = f(args)
     }
 
+  private[this] def detectedOs: String =
+    SystemDetector.normalizedOs(SystemDetector.detectedClassifier())
+
   def fromFunction[A](
       f: (Seq[String], Seq[(String, String)]) => A
   ): ProtocRunner[A] =
@@ -41,12 +44,17 @@ object ProtocRunner {
         f(args, extraEnv)
     }
 
-  private def maybeNixDynamicLinker(): Option[String] =
-    sys.env.get("NIX_CC").map { nixCC =>
-      Source
-        .fromFile(nixCC + "/nix-support/dynamic-linker")
-        .mkString
-        .trim()
+  def maybeNixDynamicLinker(): Option[String] =
+    detectedOs match {
+      case "linux" =>
+        sys.env.get("NIX_CC").map { nixCC =>
+          val source = Source.fromFile(nixCC + "/nix-support/dynamic-linker")
+          val linker = source.mkString.trim()
+          source.close()
+          linker
+        }
+      case _ =>
+        None
     }
 
   def apply(executable: String): ProtocRunner[Int] = ProtocRunner.fromFunction {

@@ -14,7 +14,8 @@ import java.{util => ju}
 
 /** PluginFrontend for Unix-like systems (Linux, Mac, etc)
   *
-  * Creates a pair of named pipes for input/output and a shell script that communicates with them.
+  * Creates a pair of named pipes for input/output and a shell script that
+  * communicates with them.
   */
 object PosixPluginFrontend extends PluginFrontend {
   case class InternalState(

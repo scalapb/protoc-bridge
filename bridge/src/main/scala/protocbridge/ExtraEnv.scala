@@ -10,13 +10,13 @@ import com.google.protobuf.DynamicMessage
 import com.google.protobuf.Descriptors.Descriptor
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorRequest
 
-/** Ad-hoc message-like class that represents extra environment available for protoc
-  * code generators running through protocbridge.
-  * This message gets appended by protocbridge to CodeGeneratorRequest so JVM plugins
-  * get access to the environment. We do not generate Java or Scala code for this message
-  * to prevent potential binary compatibility issues between the bridge and the plugin.
-  * Instead, we serialize directly to bytes. Parsing is done in a sandboxed environment, so
-  * we rely on DynamicMessage then.
+/** Ad-hoc message-like class that represents extra environment available for
+  * protoc code generators running through protocbridge. This message gets
+  * appended by protocbridge to CodeGeneratorRequest so JVM plugins get access
+  * to the environment. We do not generate Java or Scala code for this message
+  * to prevent potential binary compatibility issues between the bridge and the
+  * plugin. Instead, we serialize directly to bytes. Parsing is done in a
+  * sandboxed environment, so we rely on DynamicMessage then.
   */
 final class ExtraEnv(val secondaryOutputDir: String) {
   def toEnvMap: Map[String, String] = Map(

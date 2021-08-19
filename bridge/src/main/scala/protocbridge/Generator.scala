@@ -7,7 +7,9 @@ sealed trait Generator {
   def suggestedDependencies: Seq[Artifact]
 }
 
-/** Represents a generator built into protoc, to be used with a directory target. */
+/** Represents a generator built into protoc, to be used with a directory
+  * target.
+  */
 final case class BuiltinGenerator(
     name: String,
     suggestedDependencies: Seq[Artifact] = Nil
@@ -31,17 +33,18 @@ final case class JvmGenerator(name: String, gen: ProtocCodeGenerator)
   def suggestedDependencies: Seq[Artifact] = gen.suggestedDependencies
 }
 
-/** Represents a JvmGenerator that needs to be dynamically loaded from an artifact.
-  * This allows to run each JvmGenerator in its own classloader and thus avoid dependency
-  * conflicts between plugins or between plugins and the container (such as sbt).
+/** Represents a JvmGenerator that needs to be dynamically loaded from an
+  * artifact. This allows to run each JvmGenerator in its own classloader and
+  * thus avoid dependency conflicts between plugins or between plugins and the
+  * container (such as sbt).
   *
-  * This mechanism is needed because SBT ships with an old version of protobuf-java
-  * that is not binary compatible with recent versions. In addition, SBT depends on
-  * ScalaPB's runtime, so ScalaPB plugins can't use ScalaPB itself without running a
-  * risk of conflict.
+  * This mechanism is needed because SBT ships with an old version of
+  * protobuf-java that is not binary compatible with recent versions. In
+  * addition, SBT depends on ScalaPB's runtime, so ScalaPB plugins can't use
+  * ScalaPB itself without running a risk of conflict.
   *
-  * artifact: Artifact containing the generator class.
-  * resolver: Using a ClassLoader, return a new instance of a ProtocCodeGenerator.
+  * artifact: Artifact containing the generator class. resolver: Using a
+  * ClassLoader, return a new instance of a ProtocCodeGenerator.
   */
 final case class SandboxedJvmGenerator private (
     name: String,
@@ -65,7 +68,9 @@ final case class SandboxedJvmGenerator private (
 
 object SandboxedJvmGenerator {
 
-  /** Instantiates a SandboxedJvmGenerator that loads an object named generatorClass */
+  /** Instantiates a SandboxedJvmGenerator that loads an object named
+    * generatorClass
+    */
   def forModule(
       name: String,
       artifact: Artifact,
@@ -79,7 +84,9 @@ object SandboxedJvmGenerator {
       SandboxedJvmGenerator.load(generatorClass, _)
     )
 
-  /** Instantiates a SandboxedJvmGenerator that uses a class loader to load a generator */
+  /** Instantiates a SandboxedJvmGenerator that uses a class loader to load a
+    * generator
+    */
   def forResolver(
       name: String,
       artifact: Artifact,

@@ -9,14 +9,16 @@ import com.google.protobuf.Descriptors.FileDescriptor
 import com.google.protobuf.compiler.PluginProtos
 import com.google.protobuf.DescriptorProtos.FileDescriptorProto
 
-/** CodeGenApp provides a higher-level Scala API to build protoc code generators.
+/** CodeGenApp provides a higher-level Scala API to build protoc code
+  * generators.
   *
-  * As a code generator author, you need to optionally provide a `registerExtensions`
-  * function to register any extensions needed for parsing the CodeGeneratorRequest.
+  * As a code generator author, you need to optionally provide a
+  * `registerExtensions` function to register any extensions needed for parsing
+  * the CodeGeneratorRequest.
   *
   * The implement the function process that takes a CodeGenRequest and returns a
-  * CodeGenResponse. These classes provides higher-level, idiomatic access to the
-  * request and response used by protoc.
+  * CodeGenResponse. These classes provides higher-level, idiomatic access to
+  * the request and response used by protoc.
   */
 @deprecated(
   "Use protocgen.CodeGenApp from com.thesamet.scalapb:protocgen instead",

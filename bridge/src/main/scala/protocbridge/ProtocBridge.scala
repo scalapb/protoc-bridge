@@ -13,12 +13,17 @@ object ProtocBridge {
 
   /** Runs protoc with a given set of targets.
     *
-    * @param protoc a function that runs protoc with the given command line arguments.
-    * @param targets a sequence of generators to invokes
-    * @param params a sequence of additional params to pass to protoc
-    * @param classLoader function that provided a sandboxed ClassLoader for an artifact.
+    * @param protoc
+    *   a function that runs protoc with the given command line arguments.
+    * @param targets
+    *   a sequence of generators to invokes
+    * @param params
+    *   a sequence of additional params to pass to protoc
+    * @param classLoader
+    *   function that provided a sandboxed ClassLoader for an artifact.
     * @tparam A
-    * @return the return value from the protoc function.
+    * @return
+    *   the return value from the protoc function.
     */
   def execute[ExitCode](
       protoc: ProtocRunner[ExitCode],

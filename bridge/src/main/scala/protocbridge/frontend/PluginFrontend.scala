@@ -7,23 +7,22 @@ import protocbridge.{ProtocCodeGenerator, ExtraEnv}
 
 import scala.util.Try
 
-/** A PluginFrontend instance provides a platform-dependent way for protoc to communicate with
-  * a JVM based ProtocCodeGenerator.
+/** A PluginFrontend instance provides a platform-dependent way for protoc to
+  * communicate with a JVM based ProtocCodeGenerator.
   *
-  * protoc is able to launch plugins. Plugins are executables that take a serialized
-  * CodeGenerationRequest via stdin and serialize a CodeGenerationRequest to stdout.
-  * The idea in PluginFrontend is to create a minimal plugin that wires its stdin/stdout
-  * to this JVM.
+  * protoc is able to launch plugins. Plugins are executables that take a
+  * serialized CodeGenerationRequest via stdin and serialize a
+  * CodeGenerationRequest to stdout. The idea in PluginFrontend is to create a
+  * minimal plugin that wires its stdin/stdout to this JVM.
   *
   * The two-way communication always goes as follows:
   *
-  * 1. protoc writes a request to the stdin of a plugin
-  * 2. plugin writes the data to the channel
-  * 3. this JVM reads it, interprets it as CodeGenerationRequest and process it.
-  * 4. this JVM writes a CodeGenerationResponse to the channel
-  * 5. this JVM closes the channel.
-  * 6. the plugin reads the data and writes it to standard out.
-  * 7. protoc handles the CodeGenerationResponse (creates Scala sources)
+  *   1. protoc writes a request to the stdin of a plugin 2. plugin writes the
+  *      data to the channel 3. this JVM reads it, interprets it as
+  *      CodeGenerationRequest and process it. 4. this JVM writes a
+  *      CodeGenerationResponse to the channel 5. this JVM closes the channel.
+  *      6. the plugin reads the data and writes it to standard out. 7. protoc
+  *      handles the CodeGenerationResponse (creates Scala sources)
   */
 trait PluginFrontend {
   type InternalState

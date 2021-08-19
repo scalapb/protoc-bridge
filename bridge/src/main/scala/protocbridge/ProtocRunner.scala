@@ -8,8 +8,8 @@ abstract class ProtocRunner[ExitCode] {
   self =>
   def run(args: Seq[String], extraEnv: Seq[(String, String)]): ExitCode
 
-  /** Returns a new ProtocRunner that is executed after this value. The exit codes
-    *  are combined into a tuple.
+  /** Returns a new ProtocRunner that is executed after this value. The exit
+    * codes are combined into a tuple.
     */
   def zip[E](
       other: ProtocRunner[E]

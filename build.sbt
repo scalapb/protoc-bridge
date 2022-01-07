@@ -23,8 +23,8 @@ lazy val bridge: Project = project
                        else Nil),
     libraryDependencies ++= Seq(
       "dev.dirs" % "directories" % "26",
-      protobufJava % "3.7.1" % "provided",
-      protobufJava % "3.7.1" % "test",
+      protobufJava % "3.19.2" % "provided",
+      protobufJava % "3.19.2" % "test",
       "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % "test",
       "org.scalatest" %% "scalatest" % "3.2.10" % "test",
       "org.scalacheck" %% "scalacheck" % "1.15.4" % "test",
@@ -62,7 +62,7 @@ lazy val protocGen = project
   .settings(
     name := "protoc-gen",
     libraryDependencies ++= Seq(
-      protobufJava % "3.12.2" % "provided"
+      protobufJava % "3.19.2" % "provided"
     ),
     mimaPreviousArtifacts := Set(
       organization.value %% name.value % "0.9.0-RC3"

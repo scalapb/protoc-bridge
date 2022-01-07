@@ -8,7 +8,7 @@ object gens {
 
   val cpp = BuiltinGenerator("cpp")
   val csharp = BuiltinGenerator("csharp")
-  val java: BuiltinGenerator = java("3.19.1")
+  val java: BuiltinGenerator = java("3.19.2")
 
   def java(runtimeVersion: String): BuiltinGenerator =
     BuiltinGenerator(
@@ -23,7 +23,7 @@ object gens {
     PluginGenerator(name, Nil, Some(path))
 
   val javanano = BuiltinGenerator("javanano")
-  val kotlin: BuiltinGenerator = kotlin("3.19.1")
+  val kotlin: BuiltinGenerator = kotlin("3.19.2")
   def kotlin(runtimeVersion: String): BuiltinGenerator =
     BuiltinGenerator(
       "kotlin",

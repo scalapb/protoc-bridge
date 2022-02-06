@@ -55,11 +55,11 @@ object WindowsPluginFrontend extends PluginFrontend {
       ".bat",
       s"""@echo off
           |"${sys
-        .props(
-          "java.home"
-        )}\\bin\\java.exe" -cp "$classPathBatchString" ${classOf[
-        BridgeApp
-      ].getName} $port
+          .props(
+            "java.home"
+          )}\\bin\\java.exe" -cp "$classPathBatchString" ${classOf[
+          BridgeApp
+        ].getName} $port
         """.stripMargin
     )
     InternalState(batchFile)

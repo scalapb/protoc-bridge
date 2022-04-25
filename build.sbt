@@ -26,7 +26,7 @@ lazy val bridge: Project = project
       protobufJava % "3.19.2" % "provided",
       protobufJava % "3.19.2" % "test",
       "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % "test",
-      "org.scalatest" %% "scalatest" % "3.2.11" % "test",
+      "org.scalatest" %% "scalatest" % "3.2.12" % "test",
       "org.scalacheck" %% "scalacheck" % "1.16.0" % "test",
       "org.scala-lang.modules" %% "scala-collection-compat" % "2.7.0" % "test",
       "io.get-coursier" %% "coursier" % coursierVersion % "test"

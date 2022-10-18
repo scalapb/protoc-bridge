@@ -3,7 +3,7 @@ import com.typesafe.tools.mima.core._
 inThisBuild(
   List(
     scalaVersion := "2.12.16",
-    crossScalaVersions := Seq("2.12.16", "2.13.8"),
+    crossScalaVersions := Seq("2.12.16", "2.13.10"),
     scalacOptions ++= List("-target:jvm-1.8"),
     javacOptions ++= List("-target", "8", "-source", "8"),
     organization := "com.thesamet.scalapb"
@@ -27,7 +27,7 @@ lazy val bridge: Project = project
       protobufJava % "3.19.2" % "test",
       "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % "test",
       "org.scalatest" %% "scalatest" % "3.2.13" % "test",
-      "org.scalacheck" %% "scalacheck" % "1.16.0" % "test",
+      "org.scalacheck" %% "scalacheck" % "1.17.0" % "test",
       "org.scala-lang.modules" %% "scala-collection-compat" % "2.8.1" % "test",
       "io.get-coursier" %% "coursier" % coursierVersion % "test"
     ),

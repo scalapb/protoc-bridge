@@ -2,8 +2,8 @@ import com.typesafe.tools.mima.core._
 
 inThisBuild(
   List(
-    scalaVersion := "2.12.17",
-    crossScalaVersions := Seq("2.12.17", "2.13.8"),
+    scalaVersion := "2.12.16",
+    crossScalaVersions := Seq("2.12.16", "2.13.8"),
     scalacOptions ++= List("-target:jvm-1.8"),
     javacOptions ++= List("-target", "8", "-source", "8"),
     organization := "com.thesamet.scalapb"

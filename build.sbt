@@ -12,7 +12,7 @@ inThisBuild(
 
 val protobufJava = "com.google.protobuf" % "protobuf-java"
 
-val coursierVersion = "2.1.3"
+val coursierVersion = "2.1.4"
 
 lazy val bridge: Project = project
   .in(file("bridge"))
@@ -26,7 +26,7 @@ lazy val bridge: Project = project
       protobufJava % "3.21.7" % "provided",
       protobufJava % "3.21.7" % "test",
       "org.scalatestplus" %% "scalacheck-1-14" % "3.2.2.0" % "test",
-      "org.scalatest" %% "scalatest" % "3.2.15" % "test",
+      "org.scalatest" %% "scalatest" % "3.2.16" % "test",
       "org.scalacheck" %% "scalacheck" % "1.17.0" % "test",
       "org.scala-lang.modules" %% "scala-collection-compat" % "2.9.0" % "test",
       "io.get-coursier" %% "coursier" % coursierVersion % "test"

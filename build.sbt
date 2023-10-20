@@ -10,7 +10,7 @@ inThisBuild(
   )
 )
 
-val protobufJava = "com.google.protobuf" % "protobuf-java"
+val protobufJava = "com.google.protobuf" % "protobuf-java" % "3.24.4"
 
 val coursierVersion = "2.1.7"
 
@@ -23,8 +23,8 @@ lazy val bridge: Project = project
                        else Nil),
     libraryDependencies ++= Seq(
       "dev.dirs" % "directories" % "26",
-      protobufJava % "3.21.7" % "provided",
-      protobufJava % "3.21.7" % "test",
+      protobufJava % "provided",
+      protobufJava % "test",
       "org.scalatestplus" %% "scalacheck-1-16" % "3.2.14.0" % "test",
       "org.scalatest" %% "scalatest" % "3.2.16" % "test",
       "org.scalacheck" %% "scalacheck" % "1.17.0" % "test",
@@ -62,7 +62,7 @@ lazy val protocGen = project
   .settings(
     name := "protoc-gen",
     libraryDependencies ++= Seq(
-      protobufJava % "3.21.7" % "provided"
+      protobufJava % "provided"
     ),
     mimaPreviousArtifacts := Set(
       organization.value %% name.value % "0.9.0-RC3"

@@ -57,10 +57,19 @@ object ProtocRunner {
         None
     }
 
+  // This version of maybeNixDynamicLinker() finds ld-linux and also uses it
+  // to verify that the executable is dynamic. Newer version (>=3.23.0) of
+  // protoc are static, and thus do not load with ld-linux.
+  def maybeNixDynamicLinker(executable: String): Option[String] =
+    maybeNixDynamicLinker().filter { linker =>
+      Process(command = Seq(linker, "--verify", executable)).! == 0
+    }
+
   def apply(executable: String): ProtocRunner[Int] = ProtocRunner.fromFunction {
     case (args, extraEnv) =>
       Process(
-        command = (maybeNixDynamicLinker().toSeq :+ executable) ++ args,
+        command =
+          (maybeNixDynamicLinker(executable).toSeq :+ executable) ++ args,
         cwd = None,
         extraEnv: _*
       ).!

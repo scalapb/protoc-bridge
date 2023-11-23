@@ -5,7 +5,6 @@ import java.io.File
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import scala.io.Source
 import coursier._
 import coursier.core.Extension
 
@@ -23,13 +22,10 @@ object CoursierProtocCache {
   ): Int = {
     import sys.process._
 
-    val maybeNixDynamicLinker: Option[String] =
-      sys.env.get("NIX_CC").map { nixCC =>
-        Source.fromFile(nixCC + "/nix-support/dynamic-linker").mkString.trim()
-      }
+    val protoc = getProtoc(version).getAbsolutePath()
 
-    val cmd = (maybeNixDynamicLinker.toSeq :+ getProtoc(version)
-      .getAbsolutePath()) ++ args
+    val cmd =
+      (ProtocRunner.maybeNixDynamicLinker(protoc).toSeq :+ protoc) ++ args
     Process(command = cmd, cwd = None, extraEnv: _*).!
   }
 

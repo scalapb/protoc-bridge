@@ -4,7 +4,7 @@ import scala.concurrent.Future
 import dev.dirs.ProjectDirectories
 import java.util.concurrent.ConcurrentHashMap
 import scala.concurrent.Promise
-import java.io.File
+import java.io.{File, IOException}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Try
 import java.nio.file.{AccessDeniedException, Files, Path, StandardCopyOption}

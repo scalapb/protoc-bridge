@@ -62,7 +62,7 @@ final class FileCache[K](
         // On Windows sometimes atomic moves are impossible when destination
         // exists or in use, but (hopefully) we can silently ignore it since the file is
         // already there.
-        if (!Files.isRegularFile(path)) {
+        if (!Files.isRegularFile(dstPath)) {
           throw new IOException(
             "File move failed and destination does not exist",
             e

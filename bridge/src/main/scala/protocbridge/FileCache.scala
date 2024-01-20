@@ -49,13 +49,13 @@ final class FileCache[K](
     val tmp = File.createTempFile("protocbridge", "tmp", dst.getParentFile())
     val dstPath = dst.toPath()
     Files.copy(src.toPath(), tmp.toPath(), StandardCopyOption.REPLACE_EXISTING)
+    tmp.setExecutable(true)
     Files.move(
-      src.toPath(),
+      tmp.toPath(),
       dstPath,
       StandardCopyOption.ATOMIC_MOVE,
       StandardCopyOption.REPLACE_EXISTING
     )
-    dst.setExecutable(true)
     dst
   }
 

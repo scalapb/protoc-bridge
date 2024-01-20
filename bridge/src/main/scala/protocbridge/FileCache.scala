@@ -7,7 +7,7 @@ import scala.concurrent.Promise
 import java.io.File
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Try
-import java.nio.file.{Files, Path, StandardCopyOption}
+import java.nio.file.{AccessDeniedException, Files, Path, StandardCopyOption}
 
 /** Cache for files that performs a single concurrent get per key upon miss. */
 final class FileCache[K](
@@ -50,12 +50,22 @@ final class FileCache[K](
     val dstPath = dst.toPath()
     Files.copy(src.toPath(), tmp.toPath(), StandardCopyOption.REPLACE_EXISTING)
     tmp.setExecutable(true)
-    Files.move(
-      tmp.toPath(),
-      dstPath,
-      StandardCopyOption.ATOMIC_MOVE,
-      StandardCopyOption.REPLACE_EXISTING
-    )
+    try {
+      Files.move(
+        tmp.toPath(),
+        dstPath,
+        StandardCopyOption.ATOMIC_MOVE,
+        StandardCopyOption.REPLACE_EXISTING
+      )
+    } catch {
+      case e: AccessDeniedException =>
+        // On Windows sometimes atomic moves are impossible...
+        Files.move(
+          tmp.toPath(),
+          dstPath,
+          StandardCopyOption.REPLACE_EXISTING
+        )
+    }
     dst
   }
 

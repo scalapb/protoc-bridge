@@ -7,7 +7,7 @@ import scala.concurrent.Promise
 import java.io.File
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Try
-import java.nio.file.{Files, Path}
+import java.nio.file.{Files, Path, StandardCopyOption}
 
 /** Cache for files that performs a single concurrent get per key upon miss. */
 final class FileCache[K](
@@ -46,8 +46,15 @@ final class FileCache[K](
   }
 
   private[protocbridge] def copyToCache(src: File, dst: File): File = {
+    val tmp = File.createTempFile("protocbridge", "tmp", dst.getParentFile())
     val dstPath = dst.toPath()
-    Files.copy(src.toPath(), dst.toPath())
+    Files.copy(src.toPath(), tmp.toPath(), StandardCopyOption.REPLACE_EXISTING)
+    Files.move(
+      src.toPath(),
+      dstPath,
+      StandardCopyOption.ATOMIC_MOVE,
+      StandardCopyOption.REPLACE_EXISTING
+    )
     dst.setExecutable(true)
     dst
   }

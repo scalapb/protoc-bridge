@@ -63,7 +63,10 @@ final class FileCache[K](
         // exists or in use, but (hopefully) we can silently ignore it since the file is
         // already there.
         if (!Files.isRegularFile(path)) {
-          throw new IOException("File move failed and destination does not exist", e)
+          throw new IOException(
+            "File move failed and destination does not exist",
+            e
+          )
         }
     }
     dst

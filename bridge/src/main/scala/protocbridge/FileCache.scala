@@ -4,10 +4,10 @@ import scala.concurrent.Future
 import dev.dirs.ProjectDirectories
 import java.util.concurrent.ConcurrentHashMap
 import scala.concurrent.Promise
-import java.io.File
+import java.io.{File, IOException}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Try
-import java.nio.file.{Files, Path}
+import java.nio.file.{AccessDeniedException, Files, Path, StandardCopyOption}
 
 /** Cache for files that performs a single concurrent get per key upon miss. */
 final class FileCache[K](
@@ -46,9 +46,29 @@ final class FileCache[K](
   }
 
   private[protocbridge] def copyToCache(src: File, dst: File): File = {
+    val tmp = File.createTempFile("protocbridge", "tmp", dst.getParentFile())
     val dstPath = dst.toPath()
-    Files.copy(src.toPath(), dst.toPath())
-    dst.setExecutable(true)
+    Files.copy(src.toPath(), tmp.toPath(), StandardCopyOption.REPLACE_EXISTING)
+    tmp.setExecutable(true)
+    try {
+      Files.move(
+        tmp.toPath(),
+        dstPath,
+        StandardCopyOption.ATOMIC_MOVE,
+        StandardCopyOption.REPLACE_EXISTING
+      )
+    } catch {
+      case e: AccessDeniedException =>
+        // On Windows sometimes atomic moves are impossible when destination
+        // exists or in use, but (hopefully) we can silently ignore it since the file is
+        // already there.
+        if (!Files.isRegularFile(dstPath)) {
+          throw new IOException(
+            "File move failed and destination does not exist",
+            e
+          )
+        }
+    }
     dst
   }
 

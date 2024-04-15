@@ -28,7 +28,7 @@ lazy val bridge: Project = project
       "org.scalatestplus" %% "scalacheck-1-16" % "3.2.14.0" % "test",
       "org.scalatest" %% "scalatest" % "3.2.18" % "test",
       "org.scalacheck" %% "scalacheck" % "1.17.0" % "test",
-      "org.scala-lang.modules" %% "scala-collection-compat" % "2.11.0" % "test",
+      "org.scala-lang.modules" %% "scala-collection-compat" % "2.12.0" % "test",
       "io.get-coursier" %% "coursier" % coursierVersion % "test"
     ),
     scalacOptions ++= (if (scalaVersion.value.startsWith("2.13."))

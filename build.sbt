@@ -3,7 +3,7 @@ import com.typesafe.tools.mima.core._
 inThisBuild(
   List(
     scalaVersion := "2.12.19",
-    crossScalaVersions := Seq("2.12.19", "2.13.13"),
+    crossScalaVersions := Seq("2.12.19", "2.13.14"),
     scalacOptions ++= List("-release", "8"),
     javacOptions ++= List("-target", "8", "-source", "8"),
     organization := "com.thesamet.scalapb"

@@ -67,7 +67,7 @@ object TestUtils {
 }
 
 class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
-  "ProtocBridge.run" should "invoke JVM and Java plugin properly" in {
+  def invokeProtocProperly(runner: ProtocRunner[Int]) = {
     val protoFile =
       new File(getClass.getResource("/test.proto").getFile).getAbsolutePath
     val protoDir = new File(getClass.getResource("/").getFile).getAbsolutePath
@@ -77,7 +77,7 @@ class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
       (0 to 4).map(i => Files.createTempDirectory(s"testout$i").toFile())
 
     ProtocBridge.execute(
-      RunProtoc,
+      runner,
       Seq(
         protocbridge.gens.java("3.8.0") -> javaOutDir,
         TestJvmPlugin -> testOutDirs(0),
@@ -109,6 +109,14 @@ class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
       Seq("foo,bar:value,baz=qux")
     )
     readLines(new File(testOutDirs(0), "parameters.txt")) must be(Seq("Empty"))
+  }
+
+  "ProtocBridge.run" should "invoke JVM and Java plugin properly" in {
+    invokeProtocProperly(RunProtoc)
+  }
+
+  "ProtocBridge.run" should "invoke JVM and Java plugin properly with options file" in {
+    invokeProtocProperly(ProtocRunner.withParametersAsFile(RunProtoc))
   }
 
   it should "not deadlock for highly concurrent invocations" in {

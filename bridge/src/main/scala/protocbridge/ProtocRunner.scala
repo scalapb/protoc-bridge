@@ -1,5 +1,6 @@
 package protocbridge
 
+import java.nio.file.Files
 import scala.io.Source
 import scala.sys.process.Process
 import scala.sys.process.ProcessLogger
@@ -74,4 +75,31 @@ object ProtocRunner {
         extraEnv: _*
       ).!
   }
+
+  // Transforms the given protoc runner to a new runner that writes the
+  // options into a temporary file and passes the file to `protoc` as an `@`
+  // parameter.
+  def withParametersAsFile[T](underlying: ProtocRunner[T]): ProtocRunner[T] =
+    fromFunction { (args, extraEnv) =>
+      {
+        val argumentFile = Files.createTempFile("protoc-args-", ".txt")
+        try {
+          val writer = Files.newBufferedWriter(argumentFile)
+
+          try {
+            args.foreach { arg =>
+              writer.write(arg)
+              writer.write('\n')
+            }
+          } finally {
+            writer.close()
+          }
+
+          val fileArgument = s"@${argumentFile.toString}"
+          underlying.run(Seq(fileArgument), extraEnv)
+        } finally {
+          Files.delete(argumentFile)
+        }
+      }
+    }
 }

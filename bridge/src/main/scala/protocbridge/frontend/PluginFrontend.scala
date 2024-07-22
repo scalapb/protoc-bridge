@@ -47,13 +47,7 @@ object PluginFrontend {
       gen: ProtocCodeGenerator,
       request: Array[Byte]
   ): Array[Byte] = {
-    Try {
-      gen.run(request)
-    }.recover { case throwable =>
-      createCodeGeneratorResponseWithError(
-        throwable.toString + "\n" + getStackTrace(throwable)
-      )
-    }.get
+    gen.run(request)
   }
 
   def createCodeGeneratorResponseWithError(error: String): Array[Byte] = {
@@ -116,9 +110,17 @@ object PluginFrontend {
       gen: ProtocCodeGenerator,
       fsin: InputStream,
       env: ExtraEnv
-  ): Array[Byte] = {
+  ): Array[Byte] = try {
+    System.err.println("readInputStreamToByteArrayWithEnv...")
     val bytes = readInputStreamToByteArrayWithEnv(fsin, env)
+    System.err.println("runWithBytes...")
     runWithBytes(gen, bytes)
+  } catch {
+    case throwable: Throwable =>
+      System.err.println("createCodeGeneratorResponseWithError...")
+      createCodeGeneratorResponseWithError(
+        throwable.toString + "\n" + getStackTrace(throwable)
+      )
   }
 
   def createTempFile(extension: String, content: String): Path = {

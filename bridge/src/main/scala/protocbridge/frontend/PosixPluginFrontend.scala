@@ -36,13 +36,21 @@ object PosixPluginFrontend extends PluginFrontend {
 
     Future {
       blocking {
+        System.err.println("Files.newInputStream...")
         val fsin = Files.newInputStream(inputPipe)
+        System.err.println("PluginFrontend.runWithInputStream...")
         val response = PluginFrontend.runWithInputStream(plugin, fsin, env)
+        System.err.println("fsin.close...")
         fsin.close()
 
+        System.err.println("Files.newOutputStream...")
         val fsout = Files.newOutputStream(outputPipe)
+        System.err.println("fsout.write...")
         fsout.write(response)
+        System.err.println("fsout.close...")
         fsout.close()
+
+        System.err.println("blocking done.")
       }
     }
     (sh, InternalState(inputPipe, outputPipe, tempDirPath, sh))

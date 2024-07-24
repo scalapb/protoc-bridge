@@ -47,7 +47,16 @@ object PluginFrontend {
       gen: ProtocCodeGenerator,
       request: Array[Byte]
   ): Array[Byte] = {
-    gen.run(request)
+    // Use try-catch to handle all Throwable including OutOfMemoryError, StackOverflowError, etc.
+    try {
+      gen.run(request)
+    } catch {
+      case throwable: Throwable =>
+        System.err.println("createCodeGeneratorResponseWithError...")
+        createCodeGeneratorResponseWithError(
+          throwable.toString + "\n" + getStackTrace(throwable)
+        )
+    }
   }
 
   def createCodeGeneratorResponseWithError(error: String): Array[Byte] = {
@@ -110,17 +119,11 @@ object PluginFrontend {
       gen: ProtocCodeGenerator,
       fsin: InputStream,
       env: ExtraEnv
-  ): Array[Byte] = try {
-    System.err.println("readInputStreamToByteArrayWithEnv...")
+  ): Array[Byte] = {
+//    System.err.println("readInputStreamToByteArrayWithEnv...")
     val bytes = readInputStreamToByteArrayWithEnv(fsin, env)
-    System.err.println("runWithBytes...")
+//    System.err.println("runWithBytes...")
     runWithBytes(gen, bytes)
-  } catch {
-    case throwable: Throwable =>
-      System.err.println("createCodeGeneratorResponseWithError...")
-      createCodeGeneratorResponseWithError(
-        throwable.toString + "\n" + getStackTrace(throwable)
-      )
   }
 
   def createTempFile(extension: String, content: String): Path = {

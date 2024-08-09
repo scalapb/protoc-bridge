@@ -23,23 +23,30 @@ class PosixPluginFrontendSpec extends AnyFlatSpec with Matchers {
           toReceive
         }
       }
-      val (path, state) = PosixPluginFrontend.prepare(
-        fakeGenerator,
-        env
-      )
-      val actualOutput = new ByteArrayOutputStream()
-      val process = sys.process
-        .Process(path.toAbsolutePath.toString)
-        .run(new ProcessIO(writeInput => {
-          writeInput.write(toSend)
-          writeInput.close()
-        }, processOutput => {
-          IOUtils.copy(processOutput, actualOutput)
-          processOutput.close()
-        }, _.close()))
-      process.exitValue()
-      actualOutput.toByteArray mustBe toReceive
-      PosixPluginFrontend.cleanup(state)
+
+      // Repeat 10,000 times since named pipes on macOS are flaky.
+      val repeatCount = 10000
+      for (i <- 1 to repeatCount) {
+        if (i % 100 == 1) println(s"Running iteration $i of $repeatCount")
+
+        val (path, state) = PosixPluginFrontend.prepare(
+          fakeGenerator,
+          env
+        )
+        val actualOutput = new ByteArrayOutputStream()
+        val process = sys.process
+          .Process(path.toAbsolutePath.toString)
+          .run(new ProcessIO(writeInput => {
+            writeInput.write(toSend)
+            writeInput.close()
+          }, processOutput => {
+            IOUtils.copy(processOutput, actualOutput)
+            processOutput.close()
+          }, _.close()))
+        process.exitValue()
+        actualOutput.toByteArray mustBe toReceive
+        PosixPluginFrontend.cleanup(state)
+      }
     }
   }
 }

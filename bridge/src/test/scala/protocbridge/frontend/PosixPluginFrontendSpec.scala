@@ -1,5 +1,6 @@
 package protocbridge.frontend
 
+import org.apache.commons.io.IOUtils
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 import protocbridge.{ExtraEnv, ProtocCodeGenerator}
@@ -33,14 +34,7 @@ class PosixPluginFrontendSpec extends AnyFlatSpec with Matchers {
           writeInput.write(toSend)
           writeInput.close()
         }, processOutput => {
-          val buffer = new Array[Byte](4096)
-          var bytesRead = 0
-          while (bytesRead != -1) {
-            bytesRead = processOutput.read(buffer)
-            if (bytesRead != -1) {
-              actualOutput.write(buffer, 0, bytesRead)
-            }
-          }
+          IOUtils.copy(processOutput, actualOutput)
           processOutput.close()
         }, _.close()))
       process.exitValue()

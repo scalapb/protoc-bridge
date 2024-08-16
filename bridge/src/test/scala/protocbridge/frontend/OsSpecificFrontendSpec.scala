@@ -15,7 +15,7 @@ class OsSpecificFrontendSpec extends AnyFlatSpec with Matchers {
       generator: ProtocCodeGenerator,
       env: ExtraEnv,
       request: Array[Byte]
-  ): Array[Byte] = {
+  ): (frontend.InternalState, Array[Byte]) = {
     val (path, state) = frontend.prepare(
       generator,
       env
@@ -45,10 +45,12 @@ class OsSpecificFrontendSpec extends AnyFlatSpec with Matchers {
       )
     process.exitValue()
     frontend.cleanup(state)
-    actualOutput.toByteArray
+    (state, actualOutput.toByteArray)
   }
 
-  protected def testSuccess(frontend: PluginFrontend): Unit = {
+  protected def testSuccess(
+      frontend: PluginFrontend
+  ): frontend.InternalState = {
     val random = new Random()
     val toSend = Array.fill(123)(random.nextInt(256).toByte)
     val toReceive = Array.fill(456)(random.nextInt(256).toByte)
@@ -60,11 +62,15 @@ class OsSpecificFrontendSpec extends AnyFlatSpec with Matchers {
         toReceive
       }
     }
-    val response = testPluginFrontend(frontend, fakeGenerator, env, toSend)
+    val (state, response) =
+      testPluginFrontend(frontend, fakeGenerator, env, toSend)
     response mustBe toReceive
+    state
   }
 
-  protected def testFailure(frontend: PluginFrontend): Unit = {
+  protected def testFailure(
+      frontend: PluginFrontend
+  ): frontend.InternalState = {
     val random = new Random()
     val toSend = Array.fill(123)(random.nextInt(256).toByte)
     val env = new ExtraEnv(secondaryOutputDir = "tmp")
@@ -74,7 +80,9 @@ class OsSpecificFrontendSpec extends AnyFlatSpec with Matchers {
         throw new OutOfMemoryError("test error")
       }
     }
-    val response = testPluginFrontend(frontend, fakeGenerator, env, toSend)
+    val (state, response) =
+      testPluginFrontend(frontend, fakeGenerator, env, toSend)
     response.length must be > 0
+    state
   }
 }

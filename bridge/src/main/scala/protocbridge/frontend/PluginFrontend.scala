@@ -131,8 +131,13 @@ object PluginFrontend {
 
   def isWindows: Boolean = sys.props("os.name").startsWith("Windows")
 
+  def isMac: Boolean = sys.props("os.name").startsWith("Mac") || sys
+    .props("os.name")
+    .startsWith("Darwin")
+
   def newInstance: PluginFrontend = {
     if (isWindows) WindowsPluginFrontend
+    else if (isMac) MacPluginFrontend
     else PosixPluginFrontend
   }
 }

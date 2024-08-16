@@ -12,10 +12,13 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.sys.process._
 import java.{util => ju}
 
-/** PluginFrontend for Unix-like systems (Linux, Mac, etc)
+/** PluginFrontend for Unix-like systems <b>except macOS</b> (Linux, FreeBSD,
+  * etc)
   *
   * Creates a pair of named pipes for input/output and a shell script that
-  * communicates with them.
+  * communicates with them. Compared with `SocketBasedPluginFrontend`, this
+  * frontend doesn't rely on `nc` that might not be available in some
+  * distributions.
   */
 object PosixPluginFrontend extends PluginFrontend {
   case class InternalState(

@@ -47,13 +47,7 @@ object PluginFrontend {
       gen: ProtocCodeGenerator,
       request: Array[Byte]
   ): Array[Byte] = {
-    Try {
-      gen.run(request)
-    }.recover { case throwable =>
-      createCodeGeneratorResponseWithError(
-        throwable.toString + "\n" + getStackTrace(throwable)
-      )
-    }.get
+    gen.run(request)
   }
 
   def createCodeGeneratorResponseWithError(error: String): Array[Byte] = {
@@ -116,9 +110,17 @@ object PluginFrontend {
       gen: ProtocCodeGenerator,
       fsin: InputStream,
       env: ExtraEnv
-  ): Array[Byte] = {
+  ): Array[Byte] = try {
     val bytes = readInputStreamToByteArrayWithEnv(fsin, env)
     runWithBytes(gen, bytes)
+  } catch {
+    // This covers all Throwable including OutOfMemoryError, StackOverflowError, etc.
+    // We need to make a best effort to return a response to protoc,
+    // otherwise protoc can hang indefinitely.
+    case throwable: Throwable =>
+      createCodeGeneratorResponseWithError(
+        throwable.toString + "\n" + getStackTrace(throwable)
+      )
   }
 
   def createTempFile(extension: String, content: String): Path = {

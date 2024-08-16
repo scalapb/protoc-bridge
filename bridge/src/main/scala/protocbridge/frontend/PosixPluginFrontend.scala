@@ -40,6 +40,11 @@ object PosixPluginFrontend extends PluginFrontend {
         val response = PluginFrontend.runWithInputStream(plugin, fsin, env)
         fsin.close()
 
+        // Note that the output pipe must be opened after the input pipe is consumed.
+        // Otherwise, there might be a deadlock that
+        // - The shell script is stuck writing to the input pipe (which has a full buffer),
+        //   and doesn't open the write end of the output pipe.
+        // - This thread is stuck waiting for the write end of the output pipe to be opened.
         val fsout = Files.newOutputStream(outputPipe)
         fsout.write(response)
         fsout.close()

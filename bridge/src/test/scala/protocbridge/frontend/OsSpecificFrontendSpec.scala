@@ -10,20 +10,14 @@ import scala.util.Random
 
 class OsSpecificFrontendSpec extends AnyFlatSpec with Matchers {
 
-  protected def testPluginFrontend(frontend: PluginFrontend): Array[Byte] = {
-    val random = new Random()
-    val toSend = Array.fill(123)(random.nextInt(256).toByte)
-    val toReceive = Array.fill(456)(random.nextInt(256).toByte)
-    val env = new ExtraEnv(secondaryOutputDir = "tmp")
-
-    val fakeGenerator = new ProtocCodeGenerator {
-      override def run(request: Array[Byte]): Array[Byte] = {
-        request mustBe (toSend ++ env.toByteArrayAsField)
-        toReceive
-      }
-    }
+  protected def testPluginFrontend(
+      frontend: PluginFrontend,
+      generator: ProtocCodeGenerator,
+      env: ExtraEnv,
+      request: Array[Byte]
+  ): Array[Byte] = {
     val (path, state) = frontend.prepare(
-      fakeGenerator,
+      generator,
       env
     )
     val actualOutput = new ByteArrayOutputStream()
@@ -32,7 +26,7 @@ class OsSpecificFrontendSpec extends AnyFlatSpec with Matchers {
       .run(
         new ProcessIO(
           writeInput => {
-            writeInput.write(toSend)
+            writeInput.write(request)
             writeInput.close()
           },
           processOutput => {
@@ -52,5 +46,35 @@ class OsSpecificFrontendSpec extends AnyFlatSpec with Matchers {
     process.exitValue()
     frontend.cleanup(state)
     actualOutput.toByteArray
+  }
+
+  protected def testSuccess(frontend: PluginFrontend): Unit = {
+    val random = new Random()
+    val toSend = Array.fill(123)(random.nextInt(256).toByte)
+    val toReceive = Array.fill(456)(random.nextInt(256).toByte)
+    val env = new ExtraEnv(secondaryOutputDir = "tmp")
+
+    val fakeGenerator = new ProtocCodeGenerator {
+      override def run(request: Array[Byte]): Array[Byte] = {
+        request mustBe (toSend ++ env.toByteArrayAsField)
+        toReceive
+      }
+    }
+    val response = testPluginFrontend(frontend, fakeGenerator, env, toSend)
+    response mustBe toReceive
+  }
+
+  protected def testFailure(frontend: PluginFrontend): Unit = {
+    val random = new Random()
+    val toSend = Array.fill(123)(random.nextInt(256).toByte)
+    val env = new ExtraEnv(secondaryOutputDir = "tmp")
+
+    val fakeGenerator = new ProtocCodeGenerator {
+      override def run(request: Array[Byte]): Array[Byte] = {
+        throw new OutOfMemoryError("test error")
+      }
+    }
+    val response = testPluginFrontend(frontend, fakeGenerator, env, toSend)
+    response.length must be > 0
   }
 }

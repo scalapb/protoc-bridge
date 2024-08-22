@@ -47,13 +47,16 @@ object PluginFrontend {
       gen: ProtocCodeGenerator,
       request: Array[Byte]
   ): Array[Byte] = {
-    Try {
+    // Use try-catch to handle all Throwable including OutOfMemoryError, StackOverflowError, etc.
+    try {
       gen.run(request)
-    }.recover { case throwable =>
-      createCodeGeneratorResponseWithError(
-        throwable.toString + "\n" + getStackTrace(throwable)
-      )
-    }.get
+    } catch {
+      case throwable: Throwable =>
+        System.err.println("createCodeGeneratorResponseWithError...")
+        createCodeGeneratorResponseWithError(
+          throwable.toString + "\n" + getStackTrace(throwable)
+        )
+    }
   }
 
   def createCodeGeneratorResponseWithError(error: String): Array[Byte] = {
@@ -117,7 +120,9 @@ object PluginFrontend {
       fsin: InputStream,
       env: ExtraEnv
   ): Array[Byte] = {
+//    System.err.println("readInputStreamToByteArrayWithEnv...")
     val bytes = readInputStreamToByteArrayWithEnv(fsin, env)
+//    System.err.println("runWithBytes...")
     runWithBytes(gen, bytes)
   }
 

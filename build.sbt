@@ -12,7 +12,7 @@ inThisBuild(
 
 val protobufJava = "com.google.protobuf" % "protobuf-java" % "3.24.4"
 
-val coursierVersion = "2.1.10"
+val coursierVersion = "2.1.11"
 
 lazy val bridge: Project = project
   .in(file("bridge"))

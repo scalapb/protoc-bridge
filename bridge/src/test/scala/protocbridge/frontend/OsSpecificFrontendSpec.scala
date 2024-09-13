@@ -76,7 +76,7 @@ class OsSpecificFrontendSpec extends AnyFlatSpec with Matchers {
       val (state, response) =
         testPluginFrontend(frontend, fakeGenerator, env, toSend)
       try {
-        response mustBe response
+        response mustBe toReceive
       } catch {
         case e: TestFailedException =>
           System.err.println(s"""Failed on iteration $i of $repeatCount: ${e.getMessage}""")
@@ -85,7 +85,7 @@ class OsSpecificFrontendSpec extends AnyFlatSpec with Matchers {
     val (state, response) =
       testPluginFrontend(frontend, fakeGenerator, env, toSend)
     try {
-      response mustBe response
+      response mustBe toReceive
     } catch {
       case e: TestFailedException =>
         System.err.println(s"""Failed on iteration $repeatCount of $repeatCount: ${e.getMessage}""")

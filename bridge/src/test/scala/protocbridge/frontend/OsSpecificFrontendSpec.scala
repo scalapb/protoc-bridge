@@ -59,8 +59,8 @@ class OsSpecificFrontendSpec extends AnyFlatSpec with Matchers {
       frontend: PluginFrontend
   ): frontend.InternalState = {
     val random = new Random()
-    val toSend = Array.fill(123)(random.nextInt(256).toByte)
-    val toReceive = Array.fill(456)(random.nextInt(256).toByte)
+    val toSend = Array.fill(100000)(random.nextInt(256).toByte)
+    val toReceive = Array.fill(100000)(random.nextInt(256).toByte)
     val env = new ExtraEnv(secondaryOutputDir = "tmp")
 
     val fakeGenerator = new ProtocCodeGenerator {
@@ -75,24 +75,18 @@ class OsSpecificFrontendSpec extends AnyFlatSpec with Matchers {
       if (i % 100 == 1) println(s"Running iteration $i of $repeatCount")
       val (state, response) =
         testPluginFrontend(frontend, fakeGenerator, env, toSend)
-      try {
-        response mustBe toReceive
-      } catch {
-        case e: TestFailedException =>
-          System.err.println(
-            s"""Failed on iteration $i of $repeatCount: ${e.getMessage}"""
-          )
+      if (!(response sameElements toReceive)) {
+        System.err.println(
+          s"Failed on iteration $i of $repeatCount ($state): ${response.length} != ${toReceive.length}"
+        )
       }
     }
     val (state, response) =
       testPluginFrontend(frontend, fakeGenerator, env, toSend)
-    try {
-      response mustBe toReceive
-    } catch {
-      case e: TestFailedException =>
-        System.err.println(
-          s"""Failed on iteration $repeatCount of $repeatCount: ${e.getMessage}"""
-        )
+    if (!(response sameElements toReceive)) {
+      System.err.println(
+        s"Failed on iteration $repeatCount of $repeatCount ($state): ${response.length} != ${toReceive.length}"
+      )
     }
     state
   }

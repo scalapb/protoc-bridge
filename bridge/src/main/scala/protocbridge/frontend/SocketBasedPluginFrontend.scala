@@ -26,7 +26,7 @@ abstract class SocketBasedPluginFrontend extends PluginFrontend {
         // We thus add a read timeout of 1 minute here, which should be more than enough.
         // It also helps to prevent an infinite hang on both Windows and macOS due to
         // unexpected issues.
-        client.setSoTimeout(60000)
+        // client.setSoTimeout(60000)
         try {
           val response =
             PluginFrontend.runWithInputStream(

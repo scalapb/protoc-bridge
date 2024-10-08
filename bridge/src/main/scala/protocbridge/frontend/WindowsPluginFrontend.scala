@@ -1,6 +1,9 @@
 package protocbridge.frontend
 
-import java.nio.file.{Path, Paths}
+import protocbridge.{ExtraEnv, ProtocCodeGenerator}
+
+import java.net.ServerSocket
+import java.nio.file.{Files, Path, Paths}
 
 /** A PluginFrontend that binds a server socket to a local interface. The plugin
   * is a batch script that invokes BridgeApp.main() method, in a new JVM with
@@ -8,8 +11,28 @@ import java.nio.file.{Path, Paths}
   * communicate its stdin and stdout to this socket.
   */
 object WindowsPluginFrontend extends SocketBasedPluginFrontend {
+  case class InternalState(shellScript: Path, serverSocket: ServerSocket)
 
-  protected def createShellScript(port: Int): Path = {
+  override def prepare(
+      plugin: ProtocCodeGenerator,
+      env: ExtraEnv
+  ): (Path, InternalState) = {
+    val ss = new ServerSocket(0) // Bind to any available port.
+    val sh = createShellScript(ss.getLocalPort)
+
+    runWithSocket(plugin, env, ss)
+
+    (sh, InternalState(sh, ss))
+  }
+
+  override def cleanup(state: InternalState): Unit = {
+    state.serverSocket.close()
+    if (sys.props.get("protocbridge.debug") != Some("1")) {
+      Files.delete(state.shellScript)
+    }
+  }
+
+  private def createShellScript(port: Int): Path = {
     val classPath =
       Paths.get(getClass.getProtectionDomain.getCodeSource.getLocation.toURI)
     val classPathBatchString = classPath.toString.replace("%", "%%")

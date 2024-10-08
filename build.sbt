@@ -29,7 +29,8 @@ lazy val bridge: Project = project
       "org.scalatest" %% "scalatest" % "3.2.19" % "test",
       "org.scalacheck" %% "scalacheck" % "1.18.1" % "test",
       "org.scala-lang.modules" %% "scala-collection-compat" % "2.12.0" % "test",
-      "io.get-coursier" %% "coursier" % coursierVersion % "test"
+      "io.get-coursier" %% "coursier" % coursierVersion % "test",
+      "com.kohlschutter.junixsocket" % "junixsocket-core" % "2.10.0"
     ),
     scalacOptions ++= (if (scalaVersion.value.startsWith("2.13."))
                          Seq("-Wconf:origin=.*JavaConverters.*:s")

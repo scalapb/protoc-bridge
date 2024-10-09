@@ -46,6 +46,17 @@ lazy val bridge: Project = project
     )
   )
 
+lazy val bridgeStressTest = project
+  .in(file("bridge-stress-test"))
+  .dependsOn(bridge)
+  .settings(
+    name := "bridge-stress-test",
+    libraryDependencies ++= Seq(
+      "org.scalatest" %% "scalatest" % "3.2.19" % "test",
+      "commons-io" % "commons-io" % "2.11.0" % "test"
+    )
+  )
+
 lazy val protocCacheCoursier = project
   .in(file("protoc-cache-coursier"))
   .dependsOn(bridge)

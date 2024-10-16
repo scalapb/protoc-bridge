@@ -39,16 +39,13 @@ object PosixPluginFrontend extends PluginFrontend {
 
     Future {
       blocking {
+        // Each of the following two calls below block until the shell script opens the
+        // corresponding pipe. This ensures that we are not writing to any of the pipes
         val fsin = Files.newInputStream(inputPipe)
+        val fsout = Files.newOutputStream(outputPipe)
+
         val response = PluginFrontend.runWithInputStream(plugin, fsin, env)
         fsin.close()
-
-        // Note that the output pipe must be opened after the input pipe is consumed.
-        // Otherwise, there might be a deadlock that
-        // - The shell script is stuck writing to the input pipe (which has a full buffer),
-        //   and doesn't open the write end of the output pipe.
-        // - This thread is stuck waiting for the write end of the output pipe to be opened.
-        val fsout = Files.newOutputStream(outputPipe)
         fsout.write(response)
         fsout.close()
       }
@@ -77,8 +74,12 @@ object PosixPluginFrontend extends PluginFrontend {
       "",
       s"""|#!$shell
           |set -e
-          |cat /dev/stdin > "$inputPipe"
-          |cat "$outputPipe"
+          |exec 4> "$inputPipe"
+          |exec 5< "$outputPipe"
+          |cat /dev/stdin >&4
+          |exec 4>&-
+          |cat <&5
+          |exec 5<&-
       """.stripMargin
     )
     val perms = new ju.HashSet[PosixFilePermission]

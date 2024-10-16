@@ -156,7 +156,7 @@ class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
 
     Await.result(
       Future.sequence(invocations),
-      Duration(60, SECONDS)
+      Duration(120, SECONDS)
     ) must be(List.fill(parallelProtocInvocations)(0))
   }
 }

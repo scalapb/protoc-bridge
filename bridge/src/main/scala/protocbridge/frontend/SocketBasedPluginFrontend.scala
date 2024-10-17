@@ -3,26 +3,30 @@ package protocbridge.frontend
 import protocbridge.{ExtraEnv, ProtocCodeGenerator}
 
 import java.net.ServerSocket
-import java.nio.file.{Files, Path}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, blocking}
 
 /** PluginFrontend for Windows and macOS where a server socket is used.
   */
 abstract class SocketBasedPluginFrontend extends PluginFrontend {
-  case class InternalState(serverSocket: ServerSocket, shellScript: Path)
 
-  override def prepare(
+  protected def runWithSocket(
       plugin: ProtocCodeGenerator,
-      env: ExtraEnv
-  ): (Path, InternalState) = {
-    val ss = new ServerSocket(0) // Bind to any available port.
-    val sh = createShellScript(ss.getLocalPort)
-
+      env: ExtraEnv,
+      serverSocket: ServerSocket
+  ): Unit = {
     Future {
       blocking {
         // Accept a single client connection from the shell script.
-        val client = ss.accept()
+        val client = serverSocket.accept()
+        // It's found on macOS that a `junixsocket` domain socket server
+        // might not receive the EOF sent by the other end, leading to a hang:
+        // https://github.com/scalapb/protoc-bridge/issues/379
+        // However, confusingly, adding an arbitrary read timeout resolves the issue.
+        // We thus add a read timeout of 1 minute here, which should be more than enough.
+        // It also helps to prevent an infinite hang on both Windows and macOS due to
+        // unexpected issues.
+        client.setSoTimeout(60000)
         try {
           val response =
             PluginFrontend.runWithInputStream(
@@ -36,16 +40,5 @@ abstract class SocketBasedPluginFrontend extends PluginFrontend {
         }
       }
     }
-
-    (sh, InternalState(ss, sh))
   }
-
-  override def cleanup(state: InternalState): Unit = {
-    state.serverSocket.close()
-    if (sys.props.get("protocbridge.debug") != Some("1")) {
-      Files.delete(state.shellScript)
-    }
-  }
-
-  protected def createShellScript(port: Int): Path
 }

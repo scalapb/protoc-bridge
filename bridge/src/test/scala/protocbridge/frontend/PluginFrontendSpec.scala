@@ -28,7 +28,7 @@ class PluginFrontendSpec
     actual("a" * 256) must be(expected("a" * 256))
     actual("\u3714\u3715" * 256) must be(expected("\u3714\u3715" * 256))
     actual("abc" * 1000) must be(expected("abc" * 1000))
-    forAll(MinSuccessful(1000)) { s: String =>
+    forAll(MinSuccessful(1000)) { (s: String) =>
       actual(s) must be(expected(s))
     }
 

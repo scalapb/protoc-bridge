@@ -25,7 +25,7 @@ jobs:
         key: ${{ runner.os }}-sbt-${{ hashFiles('**/*.sbt') }}
     - name: Compile and test
       run: |
-       sbt test
+       sbt "+ test"
       shell: bash
     - name: Format check
       if: ${{ runner.os == 'Linux' }}

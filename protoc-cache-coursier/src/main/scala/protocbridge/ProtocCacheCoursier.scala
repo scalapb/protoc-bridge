@@ -47,8 +47,16 @@ object CoursierProtocCache {
   }
 
   private[this] def protocDep(version: String): Dependency =
-    dep"com.google.protobuf:protoc"
-      .withVersion(version)
+    coursier.core
+      .Dependency(
+        coursier.core
+          .Module(
+            coursier.core.Organization("com.google.protobuf"),
+            coursier.core.ModuleName("protoc"),
+            Map.empty
+          ),
+        version
+      )
       .withPublication(
         "protoc",
         Type("jar"),

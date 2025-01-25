@@ -20,7 +20,7 @@ import protocbridge.{ProtocCodeGenerator, ExtraEnv}
   *      CodeGenerationRequest and process it. 4. this JVM writes a
   *      CodeGenerationResponse to the channel 5. this JVM closes the channel.
   *      6. the plugin reads the data and writes it to standard out. 7. protoc
-  *      handles the CodeGenerationResponse (creates Scala sources)
+  *         handles the CodeGenerationResponse (creates Scala sources)
   */
 trait PluginFrontend {
   type InternalState

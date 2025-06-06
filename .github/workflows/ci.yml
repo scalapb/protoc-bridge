@@ -15,6 +15,7 @@ jobs:
       with:
         java-version: 11
         distribution: temurin
+    - uses: sbt/setup-sbt@v1
     - name: Mount caches
       uses: actions/cache@v4
       with:

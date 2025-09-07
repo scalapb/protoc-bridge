@@ -29,7 +29,7 @@ lazy val bridge: Project = project
       protobufJava % "test",
       "org.scalatestplus" %% "scalacheck-1-16" % "3.2.14.0" % "test",
       "org.scalatest" %% "scalatest" % "3.2.19" % "test",
-      "org.scalacheck" %% "scalacheck" % "1.18.1" % "test",
+      "org.scalacheck" %% "scalacheck" % "1.19.0" % "test",
       "io.get-coursier" %% "coursier" % coursierVersion % "test" cross CrossVersion.for3Use2_13
     ),
     conflictWarning := {

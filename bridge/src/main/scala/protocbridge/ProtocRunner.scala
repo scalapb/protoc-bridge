@@ -58,6 +58,37 @@ object ProtocRunner {
         None
     }
 
+  def maybeBoxArgsInFile[T](args: Seq[String])(withArgs: Seq[String] => T): T =
+    detectedOs match {
+      case "windows" =>
+        // The default command line length limit is 32767, which we might exceed.
+        // See also https://devblogs.microsoft.com/oldnewthing/20031210-00/?p=41553
+        // As of protobuf v3.5.0, you can pass arguments via a file instead with @<filename>.
+        // Arguments in the file are delimited by a newline and not escaped in any way.
+        val argumentFile = Files.createTempFile("scalapb-arguments-", ".txt")
+
+        try {
+          val writer = Files.newBufferedWriter(argumentFile)
+
+          try {
+            for (arg <- args) {
+              writer.write(arg)
+              writer.write("\n")
+            }
+          } finally {
+            writer.close()
+          }
+
+          val fileArgument = s"@${argumentFile.toString}"
+          withArgs(Seq(fileArgument))
+        } finally {
+          Files.delete(argumentFile)
+        }
+      case _ =>
+        // No special handling: just use the arguments as-is.
+        withArgs(args)
+    }
+
   // This version of maybeNixDynamicLinker() finds ld-linux and also uses it
   // to verify that the executable is dynamic. Newer version (>=3.23.0) of
   // protoc are static, and thus do not load with ld-linux.
@@ -68,12 +99,14 @@ object ProtocRunner {
 
   def apply(executable: String): ProtocRunner[Int] = ProtocRunner.fromFunction {
     case (args, extraEnv) =>
-      Process(
-        command =
-          (maybeNixDynamicLinker(executable).toSeq :+ executable) ++ args,
-        cwd = None,
-        extraEnv: _*
-      ).!
+      maybeBoxArgsInFile(args) { args =>
+        Process(
+          command =
+            (maybeNixDynamicLinker(executable).toSeq :+ executable) ++ args,
+          cwd = None,
+          extraEnv: _*
+        ).!
+      }
   }
 
   // Transforms the given protoc runner to a new runner that writes the

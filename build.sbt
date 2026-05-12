@@ -27,7 +27,7 @@ lazy val bridge: Project = project
       "dev.dirs" % "directories" % "26",
       protobufJava % "provided",
       protobufJava % "test",
-      "org.scalatestplus" %% "scalacheck-1-16" % "3.2.14.0" % "test",
+      "org.scalatestplus" %% "scalacheck-1-19" % "3.2.20.0" % "test",
       "org.scalatest" %% "scalatest" % "3.2.20" % "test",
       "org.scalacheck" %% "scalacheck" % "1.19.0" % "test",
       "io.get-coursier" %% "coursier" % coursierVersion % "test" cross CrossVersion.for3Use2_13

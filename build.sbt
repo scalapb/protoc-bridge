@@ -39,22 +39,6 @@ lazy val bridge: Project = project
         conflictWarning.value
       }
     },
-    Test / testOptions ++= {
-      scalaBinaryVersion.value match {
-        case "2.12" =>
-          Nil
-        case _ =>
-          // TODO
-          Seq(
-            Tests.Exclude(
-              Set(
-                "protocbridge.codegen.CodeGenAppSpec",
-                "protocbridge.ProtocCacheSpec"
-              )
-            )
-          )
-      }
-    },
     scalacOptions ++= (if (scalaVersion.value.startsWith("2.13."))
                          Seq("-Wconf:origin=.*JavaConverters.*:s")
                        else Nil),

@@ -7,7 +7,7 @@ import protocbridge.ProtocBridge
 import java.io.File
 import java.nio.file.Files
 import protocbridge.JvmGenerator
-import protocbridge.TestUtils.readLines
+import protocbridge.TestUtils.{readLines, resourceFile}
 import scala.annotation.nowarn
 import protocbridge.RunProtoc
 
@@ -31,9 +31,9 @@ object TestCodeGenApp extends CodeGenApp {
 
 class CodeGenAppSpec extends AnyFlatSpec with Matchers {
   "protocbridge.TestCodeGenApp" should "succeed by default" in {
-    val protoFile =
-      new File(getClass.getResource("/test.proto").getFile).getAbsolutePath
-    val protoDir = new File(getClass.getResource("/").getFile).getAbsolutePath
+    val proto = resourceFile(getClass, "/test.proto")
+    val protoFile = proto.getAbsolutePath
+    val protoDir = proto.getParentFile.getAbsolutePath
     val cgOutDir = Files.createTempDirectory("testout_cg").toFile()
     ProtocBridge.execute(
       RunProtoc,
@@ -46,9 +46,9 @@ class CodeGenAppSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "fail on error.proto" in {
-    val protoFile =
-      new File(getClass.getResource("/error.proto").getFile).getAbsolutePath
-    val protoDir = new File(getClass.getResource("/").getFile).getAbsolutePath
+    val proto = resourceFile(getClass, "/error.proto")
+    val protoFile = proto.getAbsolutePath
+    val protoDir = proto.getParentFile.getAbsolutePath
     val cgOutDir = Files.createTempDirectory("testout_cg").toFile()
     ProtocBridge.execute(
       RunProtoc,

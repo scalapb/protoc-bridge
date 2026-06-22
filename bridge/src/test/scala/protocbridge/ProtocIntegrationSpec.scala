@@ -2,6 +2,7 @@ package protocbridge
 
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.Paths
 import java.util.concurrent.Executors
 
 import com.google.protobuf.Descriptors.FileDescriptor
@@ -56,6 +57,9 @@ object TestJvmPlugin extends ProtocCodeGenerator {
 }
 
 object TestUtils {
+  def resourceFile(cls: Class[_], name: String): File =
+    Paths.get(cls.getResource(name).toURI).toFile
+
   def readLines(file: File) = {
     val s = Source.fromFile(file)
     try {
@@ -68,9 +72,9 @@ object TestUtils {
 
 class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
   def invokeProtocProperly(runner: ProtocRunner[Int]) = {
-    val protoFile =
-      new File(getClass.getResource("/test.proto").getFile).getAbsolutePath
-    val protoDir = new File(getClass.getResource("/").getFile).getAbsolutePath
+    val proto = TestUtils.resourceFile(getClass, "/test.proto")
+    val protoFile = proto.getAbsolutePath
+    val protoDir = proto.getParentFile.getAbsolutePath
 
     val javaOutDir = Files.createTempDirectory("javaout").toFile()
     val testOutDirs =
@@ -129,9 +133,9 @@ class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
     val parallelProtocInvocations = availableProcessors * 8
     val generatorsByInvocation = availableProcessors * 8
 
-    val protoFile =
-      new File(getClass.getResource("/test.proto").getFile).getAbsolutePath
-    val protoDir = new File(getClass.getResource("/").getFile).getAbsolutePath
+    val proto = TestUtils.resourceFile(getClass, "/test.proto")
+    val protoFile = proto.getAbsolutePath
+    val protoDir = proto.getParentFile.getAbsolutePath
 
     implicit val ec = ExecutionContext.fromExecutorService(
       Executors.newFixedThreadPool(parallelProtocInvocations)

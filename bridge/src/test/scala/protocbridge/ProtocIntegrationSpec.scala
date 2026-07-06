@@ -2,7 +2,7 @@ package protocbridge
 
 import java.io.File
 import java.nio.file.Files
-import java.nio.file.Paths
+import java.nio.file.StandardCopyOption
 import java.util.concurrent.Executors
 
 import com.google.protobuf.Descriptors.FileDescriptor
@@ -57,13 +57,21 @@ object TestJvmPlugin extends ProtocCodeGenerator {
 }
 
 object TestUtils {
-  def resourceFile(cls: Class[_], name: String): File =
-    Paths.get(cls.getResource(name).toURI).toFile
+  def resourceFile(cls: Class[_], name: String): File = {
+    val resource = Option(cls.getResourceAsStream(name))
+      .getOrElse(sys.error(s"Resource not found: $name"))
+    val fileName = name.split('/').last
+    val dir = Files.createTempDirectory("protoc-bridge-resource")
+    val file = dir.resolve(fileName)
+    try Files.copy(resource, file, StandardCopyOption.REPLACE_EXISTING)
+    finally resource.close()
+    file.toFile
+  }
 
   def readLines(file: File) = {
     val s = Source.fromFile(file)
     try {
-      Source.fromFile(file).getLines().toVector
+      s.getLines().toVector
     } finally {
       s.close()
     }

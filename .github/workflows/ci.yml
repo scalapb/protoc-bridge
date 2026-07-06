@@ -31,7 +31,7 @@ jobs:
     - name: Format check
       if: ${{ runner.os == 'Linux' }}
       run: |
-        sbt scalafmtCheck test:scalafmtCheck scalafmtSbtCheck
+        sbt 'scalafmtCheck; Test / scalafmtCheck; scalafmtSbtCheck'
   # Single final job for mergify.
   ci-passed:
     runs-on: ubuntu-latest

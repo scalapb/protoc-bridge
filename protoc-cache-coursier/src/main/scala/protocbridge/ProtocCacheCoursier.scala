@@ -24,9 +24,11 @@ object CoursierProtocCache {
 
     val protoc = getProtoc(version).getAbsolutePath()
 
-    val cmd =
-      (ProtocRunner.maybeNixDynamicLinker(protoc).toSeq :+ protoc) ++ args
-    Process(command = cmd, cwd = None, extraEnv: _*).!
+    ProtocRunner.maybeBoxArgsInFile(args) { args =>
+      val cmd =
+        (ProtocRunner.maybeNixDynamicLinker(protoc).toSeq :+ protoc) ++ args
+      Process(command = cmd, cwd = None, extraEnv: _*).!
+    }
   }
 
   private[this] def download(tmpDir: File, dep: Dependency): Future[File] = {

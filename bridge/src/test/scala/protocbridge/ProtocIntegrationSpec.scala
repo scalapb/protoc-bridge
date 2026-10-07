@@ -131,6 +131,43 @@ class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
     invokeProtocProperly(ProtocRunner.withParametersAsFile(RunProtoc))
   }
 
+  it should "compile Java maps against the default suggested runtime" in {
+    val proto = TestUtils.resourceFile(getClass, "/map.proto")
+    val output = Files.createTempDirectory("java-runtime-check").toFile
+    ProtocBridge.execute(
+      RunProtoc,
+      Seq(gens.java -> output),
+      Seq(proto.getAbsolutePath, "-I", proto.getParent)
+    ) must be(0)
+
+    val dependencies = gens.java.suggestedDependencies.map { artifact =>
+      coursier.Dependency(
+        coursier.Module(
+          coursier.Organization(artifact.groupId),
+          coursier.ModuleName(artifact.artifactId),
+          Map.empty
+        ),
+        artifact.version
+      )
+    }
+    val runtime = coursier.Fetch().addDependencies(dependencies: _*).run()
+    val compiler = javax.tools.ToolProvider.getSystemJavaCompiler
+    compiler.run(
+      null,
+      null,
+      null,
+      "-classpath",
+      runtime.map(_.getAbsolutePath).mkString(File.pathSeparator),
+      "-d",
+      output.getAbsolutePath,
+      new File(output, "runtimecheck/Map.java").getAbsolutePath
+    ) must be(0)
+
+    gens.kotlin.suggestedDependencies.map(_.version) must be(
+      gens.java.suggestedDependencies.map(_.version)
+    )
+  }
+
   it should "not deadlock for highly concurrent invocations" in {
     val availableProcessors = Runtime.getRuntime.availableProcessors
     assert(

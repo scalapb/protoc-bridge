@@ -12,7 +12,7 @@ inThisBuild(
 
 ThisBuild / versionScheme := Some("early-semver")
 
-val protobufJava = "com.google.protobuf" % "protobuf-java" % "3.25.5"
+val protobufJava = "com.google.protobuf" % "protobuf-java" % "3.25.9"
 
 val coursierVersion = "2.1.24"
 

@@ -11,6 +11,7 @@ import com.google.protobuf.compiler.PluginProtos.{
   CodeGeneratorResponse
 }
 
+import scala.annotation.nowarn
 import scala.concurrent.duration.{Duration, SECONDS}
 import scala.concurrent.{Await, ExecutionContext, Future, blocking}
 import scala.io.Source
@@ -78,6 +79,7 @@ object TestUtils {
   }
 }
 
+@nowarn("msg=method apply in object Dependency is deprecated")
 class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
   def invokeProtocProperly(runner: ProtocRunner[Int]) = {
     val proto = TestUtils.resourceFile(getClass, "/test.proto")

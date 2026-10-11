@@ -2,6 +2,7 @@ package protocbridge
 
 import scala.concurrent.Future
 import java.io.File
+import scala.annotation.nowarn
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -40,12 +41,14 @@ object CoursierProtocCache {
       )
   }
 
+  @nowarn("msg=method version in class Dependency is deprecated")
   private[this] def filenameFromKey(dep: Dependency) = {
     val ext =
       if (dep.publication.classifier.value.startsWith("win")) ".exe" else ""
     s"${dep.publication.name}-${dep.publication.classifier.value}-${dep.version}$ext"
   }
 
+  @nowarn("msg=method apply in object Dependency is deprecated")
   private[this] def protocDep(version: String): Dependency =
     coursier.core
       .Dependency(

@@ -38,8 +38,8 @@ final class FileCache[K](
         }
         p.future
       } else {
-        // discard the promise
-        p.complete(null)
+        // Another download for this key is already in progress; return its future.
+        // The newly-created promise p is abandoned and will be GC'd.
         prev.future
       }
     }

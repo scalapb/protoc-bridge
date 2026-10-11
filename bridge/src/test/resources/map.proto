@@ -1,0 +1,5 @@
+syntax = "proto3";
+package runtimecheck;
+message Node {
+  map<string, Node> children = 1;
+}

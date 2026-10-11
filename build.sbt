@@ -2,8 +2,8 @@ import com.typesafe.tools.mima.core._
 
 inThisBuild(
   List(
-    scalaVersion := "2.12.20",
-    crossScalaVersions := Seq("2.12.20", "2.13.16", "3.3.6"),
+    scalaVersion := "2.12.21",
+    crossScalaVersions := Seq("2.12.21", "2.13.18", "3.3.8"),
     scalacOptions ++= List("-release", "8"),
     javacOptions ++= List("-target", "8", "-source", "8"),
     organization := "com.thesamet.scalapb"
@@ -12,7 +12,7 @@ inThisBuild(
 
 ThisBuild / versionScheme := Some("early-semver")
 
-val protobufJava = "com.google.protobuf" % "protobuf-java" % "3.25.5"
+val protobufJava = "com.google.protobuf" % "protobuf-java" % "3.25.9"
 
 val coursierVersion = "2.1.24"
 
@@ -27,32 +27,17 @@ lazy val bridge: Project = project
       "dev.dirs" % "directories" % "26",
       protobufJava % "provided",
       protobufJava % "test",
-      "org.scalatestplus" %% "scalacheck-1-16" % "3.2.14.0" % "test",
-      "org.scalatest" %% "scalatest" % "3.2.19" % "test",
-      "org.scalacheck" %% "scalacheck" % "1.19.0" % "test",
-      "io.get-coursier" %% "coursier" % coursierVersion % "test" cross CrossVersion.for3Use2_13
+      "org.scalatestplus" %% "scalacheck-1-19" % "3.2.20.0" % "test",
+      "org.scalatest" %% "scalatest" % "3.2.20" % "test",
+      "org.scalacheck" %% "scalacheck" % "1.20.0" % "test",
+      ("io.get-coursier" %% "coursier" % coursierVersion % "test")
+        .cross(CrossVersion.for3Use2_13)
     ),
     conflictWarning := {
       if (scalaBinaryVersion.value == "3") {
         ConflictWarning("warn", Level.Warn, false)
       } else {
         conflictWarning.value
-      }
-    },
-    Test / testOptions ++= {
-      scalaBinaryVersion.value match {
-        case "2.12" =>
-          Nil
-        case _ =>
-          // TODO
-          Seq(
-            Tests.Exclude(
-              Set(
-                "protocbridge.codegen.CodeGenAppSpec",
-                "protocbridge.ProtocCacheSpec"
-              )
-            )
-          )
       }
     },
     scalacOptions ++= (if (scalaVersion.value.startsWith("2.13."))
@@ -83,7 +68,8 @@ lazy val protocCacheCoursier = project
       }
     },
     libraryDependencies ++= Seq(
-      "io.get-coursier" %% "coursier" % coursierVersion cross CrossVersion.for3Use2_13
+      ("io.get-coursier" %% "coursier" % coursierVersion)
+        .cross(CrossVersion.for3Use2_13)
     )
   )
 

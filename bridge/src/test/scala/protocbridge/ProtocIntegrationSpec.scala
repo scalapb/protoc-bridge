@@ -2,6 +2,7 @@ package protocbridge
 
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.util.concurrent.Executors
 
 import com.google.protobuf.Descriptors.FileDescriptor
@@ -56,10 +57,21 @@ object TestJvmPlugin extends ProtocCodeGenerator {
 }
 
 object TestUtils {
+  def resourceFile(cls: Class[_], name: String): File = {
+    val resource = Option(cls.getResourceAsStream(name))
+      .getOrElse(sys.error(s"Resource not found: $name"))
+    val fileName = name.split('/').last
+    val dir = Files.createTempDirectory("protoc-bridge-resource")
+    val file = dir.resolve(fileName)
+    try Files.copy(resource, file, StandardCopyOption.REPLACE_EXISTING)
+    finally resource.close()
+    file.toFile
+  }
+
   def readLines(file: File) = {
     val s = Source.fromFile(file)
     try {
-      Source.fromFile(file).getLines().toVector
+      s.getLines().toVector
     } finally {
       s.close()
     }
@@ -68,9 +80,9 @@ object TestUtils {
 
 class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
   def invokeProtocProperly(runner: ProtocRunner[Int]) = {
-    val protoFile =
-      new File(getClass.getResource("/test.proto").getFile).getAbsolutePath
-    val protoDir = new File(getClass.getResource("/").getFile).getAbsolutePath
+    val proto = TestUtils.resourceFile(getClass, "/test.proto")
+    val protoFile = proto.getAbsolutePath
+    val protoDir = proto.getParentFile.getAbsolutePath
 
     val javaOutDir = Files.createTempDirectory("javaout").toFile()
     val testOutDirs =
@@ -119,6 +131,43 @@ class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
     invokeProtocProperly(ProtocRunner.withParametersAsFile(RunProtoc))
   }
 
+  it should "compile Java maps against the default suggested runtime" in {
+    val proto = TestUtils.resourceFile(getClass, "/map.proto")
+    val output = Files.createTempDirectory("java-runtime-check").toFile
+    ProtocBridge.execute(
+      RunProtoc,
+      Seq(gens.java -> output),
+      Seq(proto.getAbsolutePath, "-I", proto.getParent)
+    ) must be(0)
+
+    val dependencies = gens.java.suggestedDependencies.map { artifact =>
+      coursier.Dependency(
+        coursier.Module(
+          coursier.Organization(artifact.groupId),
+          coursier.ModuleName(artifact.artifactId),
+          Map.empty
+        ),
+        artifact.version
+      )
+    }
+    val runtime = coursier.Fetch().addDependencies(dependencies: _*).run()
+    val compiler = javax.tools.ToolProvider.getSystemJavaCompiler
+    compiler.run(
+      null,
+      null,
+      null,
+      "-classpath",
+      runtime.map(_.getAbsolutePath).mkString(File.pathSeparator),
+      "-d",
+      output.getAbsolutePath,
+      new File(output, "runtimecheck/Map.java").getAbsolutePath
+    ) must be(0)
+
+    gens.kotlin.suggestedDependencies.map(_.version) must be(
+      gens.java.suggestedDependencies.map(_.version)
+    )
+  }
+
   it should "not deadlock for highly concurrent invocations" in {
     val availableProcessors = Runtime.getRuntime.availableProcessors
     assert(
@@ -129,9 +178,9 @@ class ProtocIntegrationSpec extends AnyFlatSpec with Matchers {
     val parallelProtocInvocations = availableProcessors * 8
     val generatorsByInvocation = availableProcessors * 8
 
-    val protoFile =
-      new File(getClass.getResource("/test.proto").getFile).getAbsolutePath
-    val protoDir = new File(getClass.getResource("/").getFile).getAbsolutePath
+    val proto = TestUtils.resourceFile(getClass, "/test.proto")
+    val protoFile = proto.getAbsolutePath
+    val protoDir = proto.getParentFile.getAbsolutePath
 
     implicit val ec = ExecutionContext.fromExecutorService(
       Executors.newFixedThreadPool(parallelProtocInvocations)

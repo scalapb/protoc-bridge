@@ -12,7 +12,7 @@ inThisBuild(
 
 ThisBuild / versionScheme := Some("early-semver")
 
-val protobufJava = "com.google.protobuf" % "protobuf-java" % "3.25.5"
+val protobufJava = "com.google.protobuf" % "protobuf-java" % "3.25.9"
 
 val coursierVersion = "2.1.24"
 
@@ -29,7 +29,7 @@ lazy val bridge: Project = project
       protobufJava % "test",
       "org.scalatestplus" %% "scalacheck-1-19" % "3.2.20.0" % "test",
       "org.scalatest" %% "scalatest" % "3.2.20" % "test",
-      "org.scalacheck" %% "scalacheck" % "1.19.0" % "test",
+      "org.scalacheck" %% "scalacheck" % "1.20.0" % "test",
       ("io.get-coursier" %% "coursier" % coursierVersion % "test")
         .cross(CrossVersion.for3Use2_13)
     ),

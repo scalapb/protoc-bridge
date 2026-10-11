@@ -14,7 +14,13 @@ ThisBuild / versionScheme := Some("early-semver")
 
 val protobufJava = "com.google.protobuf" % "protobuf-java" % "3.25.9"
 
-val coursierVersion = "2.1.24"
+val coursierVersion = Def.setting(
+  if (scalaBinaryVersion.value == "2.12") {
+    "2.1.24"
+  } else {
+    "2.1.26"
+  }
+)
 
 lazy val bridge: Project = project
   .in(file("bridge"))
@@ -30,16 +36,8 @@ lazy val bridge: Project = project
       "org.scalatestplus" %% "scalacheck-1-19" % "3.2.20.0" % "test",
       "org.scalatest" %% "scalatest" % "3.2.20" % "test",
       "org.scalacheck" %% "scalacheck" % "1.20.0" % "test",
-      ("io.get-coursier" %% "coursier" % coursierVersion % "test")
-        .cross(CrossVersion.for3Use2_13)
+      "io.get-coursier" %% "coursier" % coursierVersion.value % "test"
     ),
-    conflictWarning := {
-      if (scalaBinaryVersion.value == "3") {
-        ConflictWarning("warn", Level.Warn, false)
-      } else {
-        conflictWarning.value
-      }
-    },
     scalacOptions ++= (if (scalaVersion.value.startsWith("2.13."))
                          Seq("-Wconf:origin=.*JavaConverters.*:s")
                        else Nil),
@@ -60,16 +58,8 @@ lazy val protocCacheCoursier = project
   .dependsOn(bridge)
   .settings(
     name := "protoc-cache-coursier",
-    conflictWarning := {
-      if (scalaBinaryVersion.value == "3") {
-        ConflictWarning("warn", Level.Warn, false)
-      } else {
-        conflictWarning.value
-      }
-    },
     libraryDependencies ++= Seq(
-      ("io.get-coursier" %% "coursier" % coursierVersion)
-        .cross(CrossVersion.for3Use2_13)
+      "io.get-coursier" %% "coursier" % coursierVersion.value
     )
   )
 

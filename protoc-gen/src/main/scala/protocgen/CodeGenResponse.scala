@@ -1,6 +1,6 @@
 package protocgen
 
-import com.google.protobuf.UnknownFieldSet
+import com.google.protobuf.{Message, UnknownFieldSet}
 import com.google.protobuf.compiler.PluginProtos.CodeGeneratorResponse
 import scala.collection.JavaConverters._
 
@@ -11,7 +11,10 @@ sealed trait CodeGenResponse {
         val b = CodeGeneratorResponse.newBuilder()
         b.addAllFile(value.files.asJava)
         b.setSupportedFeatures(value.supportedFeatures.map(_.getNumber()).sum)
-        b.setUnknownFields(
+        // Use the stable interface: the concrete builder's covariant method
+        // compiled against protobuf 3.x is absent from protobuf 4.x.
+        val messageBuilder: Message.Builder = b
+        messageBuilder.setUnknownFields(
           // https://github.com/protocolbuffers/protobuf/blob/1f60d67437d7f57700/src/google/protobuf/compiler/plugin.proto#L105-L115
           UnknownFieldSet
             .newBuilder()

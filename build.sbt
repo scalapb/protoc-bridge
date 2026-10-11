@@ -97,6 +97,26 @@ lazy val protocGen = project
     Test / unmanagedResourceDirectories ++= (bridge / Test / unmanagedResourceDirectories).value
   )
 
+// Compile protocGen against the baseline runtime, then exercise its bytecode
+// with a newer runtime. Changing protocGen's compile dependency would hide
+// binary linkage regressions.
+lazy val protocGenRuntimeTests = project
+  .in(file("protoc-gen-runtime-tests"))
+  .dependsOn(protocGen % "compile->compile;test->test", protocCacheCoursier)
+  .settings(
+    publish / skip := true,
+    conflictWarning := {
+      if (scalaBinaryVersion.value == "3") {
+        ConflictWarning("warn", Level.Warn, false)
+      } else {
+        conflictWarning.value
+      }
+    },
+    libraryDependencies += protobufJava.withRevision(
+      sys.props.getOrElse("protobuf.test.version", "4.35.0")
+    )
+  )
+
 lazy val root = project
   .in(file("."))
   .settings(
@@ -107,5 +127,6 @@ lazy val root = project
   .aggregate(
     bridge,
     protocGen,
+    protocGenRuntimeTests,
     protocCacheCoursier
   )

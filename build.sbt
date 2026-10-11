@@ -47,6 +47,19 @@ val coursierVersion = Def.setting(
   }
 )
 
+val coursierDependencies = Def.setting {
+  Seq("io.get-coursier" %% "coursier" % coursierVersion.value) ++
+    (if (scalaBinaryVersion.value == "2.12") {
+       // Coursier 2.1.24 is the last release published for Scala 2.12.
+       // Use direct dependencies so these security fixes reach consumers' POMs.
+       Seq(
+         "org.apache.commons" % "commons-lang3" % "3.18.0",
+         "io.airlift" % "aircompressor" % "2.0.3",
+         "org.codehaus.plexus" % "plexus-utils" % "4.0.3"
+       )
+     } else Nil)
+}
+
 lazy val bridge: Project = project
   .in(file("bridge"))
   .settings(
@@ -60,9 +73,8 @@ lazy val bridge: Project = project
       protobufJava % "test",
       "org.scalatestplus" %% "scalacheck-1-19" % "3.2.20.0" % "test",
       "org.scalatest" %% "scalatest" % "3.2.20" % "test",
-      "org.scalacheck" %% "scalacheck" % "1.20.0" % "test",
-      "io.get-coursier" %% "coursier" % coursierVersion.value % "test"
-    ),
+      "org.scalacheck" %% "scalacheck" % "1.20.0" % "test"
+    ) ++ coursierDependencies.value.map(_ % "test"),
     scalacOptions ++= (if (scalaVersion.value.startsWith("2.13."))
                          Seq("-Wconf:origin=.*JavaConverters.*:s")
                        else Nil),
@@ -83,9 +95,7 @@ lazy val protocCacheCoursier = project
   .dependsOn(bridge)
   .settings(
     name := "protoc-cache-coursier",
-    libraryDependencies ++= Seq(
-      "io.get-coursier" %% "coursier" % coursierVersion.value
-    )
+    libraryDependencies ++= coursierDependencies.value
   )
 
 lazy val protocGen = project

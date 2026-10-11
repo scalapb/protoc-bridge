@@ -16,12 +16,13 @@ object MacPluginFrontend extends SocketBasedPluginFrontend {
 
   protected def createShellScript(port: Int): Path = {
     val shell = sys.env.getOrElse("PROTOCBRIDGE_SHELL", "/bin/sh")
+    // Use Apple's netcat: GNU netcat on PATH can hang (see issue #424).
     // We use 127.0.0.1 instead of localhost for the (very unlikely) case that localhost is missing from /etc/hosts.
     val scriptName = PluginFrontend.createTempFile(
       "",
       s"""|#!$shell
           |set -e
-          |nc 127.0.0.1 $port
+          |/usr/bin/nc 127.0.0.1 $port
       """.stripMargin
     )
     val perms = new ju.HashSet[PosixFilePermission]

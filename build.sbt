@@ -21,6 +21,22 @@ scalacOptions ++= {
 
 ThisBuild / versionScheme := Some("early-semver")
 
+// Scala 3.3.8's documentation tool brings older Jackson, jsoup, and JLine
+// versions. Override them in tool configurations without publishing runtime
+// dependencies, and keep each multi-module library on a consistent version.
+ThisBuild / dependencyOverrides ++= Seq(
+  "com.fasterxml.jackson.core" % "jackson-core" % "2.18.11",
+  "com.fasterxml.jackson.core" % "jackson-databind" % "2.18.11",
+  "com.fasterxml.jackson.core" % "jackson-annotations" % "2.18.11",
+  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.18.11",
+  "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % "2.18.11",
+  "org.jsoup" % "jsoup" % "1.23.2",
+  "org.jline" % "jline-reader" % "3.30.17",
+  "org.jline" % "jline-terminal" % "3.30.17",
+  "org.jline" % "jline-terminal-jni" % "3.30.17",
+  "org.jline" % "jline-native" % "3.30.17"
+)
+
 val protobufJava = "com.google.protobuf" % "protobuf-java" % "3.25.9"
 
 val coursierVersion = Def.setting(

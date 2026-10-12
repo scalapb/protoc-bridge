@@ -55,7 +55,7 @@ val coursierDependencies = Def.setting {
        Seq(
          "org.apache.commons" % "commons-lang3" % "3.18.0",
          "io.airlift" % "aircompressor" % "2.0.3",
-         "org.codehaus.plexus" % "plexus-utils" % "4.0.3"
+         "org.codehaus.plexus" % "plexus-utils" % "4.1.0"
        )
      } else Nil)
 }

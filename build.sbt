@@ -28,7 +28,7 @@ ThisBuild / dependencyOverrides ++= Seq(
   "com.fasterxml.jackson.core" % "jackson-core" % "2.18.11",
   "com.fasterxml.jackson.core" % "jackson-databind" % "2.18.11",
   "com.fasterxml.jackson.core" % "jackson-annotations" % "2.18.11",
-  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.18.11",
+  "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.22.3",
   "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % "2.18.11",
   "org.jsoup" % "jsoup" % "1.23.2",
   "org.jline" % "jline-reader" % "3.30.17",

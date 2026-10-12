@@ -53,7 +53,7 @@ val coursierDependencies = Def.setting {
        // Coursier 2.1.24 is the last release published for Scala 2.12.
        // Use direct dependencies so these security fixes reach consumers' POMs.
        Seq(
-         "org.apache.commons" % "commons-lang3" % "3.18.0",
+         "org.apache.commons" % "commons-lang3" % "3.21.0",
          "io.airlift" % "aircompressor" % "2.0.3",
          "org.codehaus.plexus" % "plexus-utils" % "4.0.3"
        )

@@ -31,10 +31,10 @@ ThisBuild / dependencyOverrides ++= Seq(
   "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.18.11",
   "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % "2.18.11",
   "org.jsoup" % "jsoup" % "1.23.2",
-  "org.jline" % "jline-reader" % "3.30.17",
-  "org.jline" % "jline-terminal" % "3.30.17",
-  "org.jline" % "jline-terminal-jni" % "3.30.17",
-  "org.jline" % "jline-native" % "3.30.17"
+  "org.jline" % "jline-reader" % "4.4.8",
+  "org.jline" % "jline-terminal" % "4.4.8",
+  "org.jline" % "jline-terminal-jni" % "4.4.8",
+  "org.jline" % "jline-native" % "4.4.8"
 )
 
 val protobufJava = "com.google.protobuf" % "protobuf-java" % "3.25.9"

@@ -27,7 +27,7 @@ ThisBuild / versionScheme := Some("early-semver")
 ThisBuild / dependencyOverrides ++= Seq(
   "com.fasterxml.jackson.core" % "jackson-core" % "2.22.4",
   "com.fasterxml.jackson.core" % "jackson-databind" % "2.22.4",
-  "com.fasterxml.jackson.core" % "jackson-annotations" % "2.18.11",
+  "com.fasterxml.jackson.core" % "jackson-annotations" % "2.18.12",
   "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % "2.22.4",
   "com.fasterxml.jackson.datatype" % "jackson-datatype-jsr310" % "2.22.4",
   "org.jsoup" % "jsoup" % "1.23.2",

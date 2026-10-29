@@ -3,7 +3,7 @@ import com.typesafe.tools.mima.core._
 inThisBuild(
   List(
     scalaVersion := "2.12.21",
-    crossScalaVersions := Seq("2.12.21", "2.13.18", "3.3.8"),
+    crossScalaVersions := Seq("2.12.21", "2.13.18", "3.3.9"),
     javacOptions ++= List("-target", "8", "-source", "8"),
     organization := "com.thesamet.scalapb"
   )
@@ -21,7 +21,7 @@ scalacOptions ++= {
 
 ThisBuild / versionScheme := Some("early-semver")
 
-// Scala 3.3.8's documentation tool brings older Jackson, jsoup, and JLine
+// Scala 3.3.9's documentation tool brings older Jackson, jsoup, and JLine
 // versions. Override them in tool configurations without publishing runtime
 // dependencies, and keep each multi-module library on a consistent version.
 ThisBuild / dependencyOverrides ++= Seq(
